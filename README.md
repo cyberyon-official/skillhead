@@ -12,45 +12,58 @@ Forked from [`rbaumier/skills`](https://github.com/rbaumier/skills) and cut
 down to two workflows and the skills they load. Every script is
 standard-library Python and runs on Linux, macOS and Windows.
 
-## Skills
+## Install
+
+skillhead is a Claude Code plugin; this repository is also its marketplace.
+
+```
+/plugin install skillhead --marketplace gchauvet/skill-ed
+```
+
+On Claude Code before 2.1.275, in two steps:
+
+```
+/plugin marketplace add gchauvet/skill-ed
+/plugin install skillhead@skillhead
+```
+
+Optional: `claude plugin configure skillhead` sets `guarded_repos`, the
+`owner/repo` list where only the `/skillhead:issue` publisher may create
+issues.
+
+Requirements: Claude Code, `git`, Python ≥ 3.10, `gh` or `glab`. On
+Windows, Git for Windows — Claude Code runs hooks and its Bash tool under
+Git Bash.
+
+## What's inside
 
 | Skill | What it does |
 |---|---|
-| `issue` | Turns a need described in bulk into one minimal, need-only issue on GitHub or GitLab. An agent checks it does not exist yet; a scoper writes it, a reviewer judges it (3 rounds max); the human settles implicit decisions; only the publisher agent creates it (hook-enforced). |
-| `loop-issues` | Implements issues autonomously, each phase in a fresh agent: a contract reviewed before any code, build, diff review (3 rounds max), merge into the run's integration branch; at the closing, full gates and QA, then one MR to the default branch. |
+| `/skillhead:issue` | Turns a need described in bulk into one minimal, need-only issue on GitHub or GitLab. An agent checks it does not exist yet; a scoper writes it, a reviewer judges it (3 rounds max); the human settles implicit decisions; only the publisher agent creates it (hook-enforced). |
+| `/skillhead:loop-issues` | Implements issues autonomously, each phase in a fresh agent: a contract reviewed before any code, build, diff review (3 rounds max), merge into the run's integration branch; at the closing, full gates and QA, then one MR to the default branch. |
 | `ponytail`, `ponytail-review` | What to cut: speculative abstractions, reinvented stdlib, needless dependencies. Loaded by the builder and the reviewer. |
 | `quality-bar`, `quality-bar-review` | The author-side and reviewer-side quality checklists. |
 | `qa` | The QA executor's method: drive the real app, spawn Breakers on hostile inputs, return GO / NO-GO. |
 
-Each skill lives in `skills/<name>/`. Pinned agents live next to their
-skill in `skills/<name>/agents/`. `CONTEXT.md` defines the vocabulary the
-skills share (roles, contract, gates).
+| Path | Content |
+|---|---|
+| `.claude-plugin/` | `plugin.json` (manifest), `marketplace.json`, `icon.png` |
+| `skills/<name>/` | The seven skills; `skills/loop-issues/hooks/` holds the hook scripts |
+| `agents/` | The ten pinned agents, invoked as `skillhead:<name>` |
+| `hooks/hooks.json` | The plugin's PreToolUse hooks |
+| `bin/skillhead` | Runs a plugin script with a real Python 3.10+; on the Bash tool's `PATH` while the plugin is enabled (`skillhead state tick <state.md>`) |
 
-## Requirements
-
-- Claude Code, `git`, Python ≥ 3.10, `gh` or `glab`.
-- Windows: Git for Windows — Claude Code runs hooks and its Bash tool under Git Bash.
-
-## Install
-
-```sh
-python3 install.py                        # Windows: py -3 install.py
-python3 install.py --guard-repos org/app  # also: only /issue creates issues on org/app
-python3 install.py --dry-run
-```
-
-`install.py` copies the skills to `~/.claude/skills/` and the agents to
-`~/.claude/agents/`, registers the `slot.py env` hook in
-`~/.claude/settings.json` (idempotent), and writes into hook commands the
-interpreter that exists: `python3`, else the absolute path of the current
-one. It copies rather than symlinks, since symlinks need admin rights on NTFS.
+`CONTEXT.md` defines the vocabulary the skills share (roles, contract, gates).
 
 ## Start a project
 
 ```sh
-python3 new_project.py ../my-project --name "My project" --forge github --mode draft
-python3 new_project.py ../existing-project   # adds the structure, never overwrites
+skillhead new_project ../my-project --name "My project" --forge github --mode draft
+skillhead new_project ../existing-project   # adds the structure, never overwrites
 ```
+
+From Claude's Bash tool, `skillhead` is on the `PATH`; from a clone of this
+repository, run `python3 new_project.py` instead.
 
 This lays down the structure the skills read — `CLAUDE.md` as a pointer
 table, coding guides, vocabulary, ADRs, review checklist, test rules,

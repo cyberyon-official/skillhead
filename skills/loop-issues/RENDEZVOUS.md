@@ -85,7 +85,7 @@ The notification wakes the parent; the `.done` carries the verdict.
   you ⇒ it finished without its verdict. SendMessage it that
   notification's one line + `resume`, once per notification.
 - A notification that reports the agent's turn limit (`maxTurns`:
-  250, 300 for `loop-builder`) ⇒ `BLOCKED` with the reason « turn
+  250, 300 for `skillhead:loop-builder`) ⇒ `BLOCKED` with the reason « turn
   ceiling », handled as that phase's `BLOCKED` (SKILL.md step 3; a
   phase without one → step 5), never resumed.
 - A builder's or shipper's notification without its `.done` ⇒ stalled.
@@ -101,9 +101,9 @@ with this prompt:
 > loop-issues watchdog. A user message since the loop's last spawn
 > that does not ask to continue (an interruption, a stop; a message
 > that set `mode:`, SKILL.md § Rules, is none) → CronDelete
-> this job, run `python3 ~/.claude/skills/loop-issues/hooks/loop_running.py
+> this job, run `skillhead loop_running
 > stop`, reply ⏹ + `💡 /reflect — mine this run`. Else run
-> `python3 ~/.claude/skills/loop-issues/hooks/state.py tick <state.md>`:
+> `skillhead state tick <state.md>`:
 > `paused until …` → reply ⏸ alone; `drained` → the drained stop
 > (SKILL.md § The loop); `draining` → all below but step 1. Else ListAgents:
 > a builder or reviewer of this loop running → reply ⏳ — but a

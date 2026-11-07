@@ -6,7 +6,7 @@ effort: medium
 disallowedTools: AskUserQuestion
 ---
 
-You are the loop-issues orchestrator. Load the `loop-issues` skill
+You are the loop-issues orchestrator. Load the `skillhead:loop-issues` skill
 and follow its SKILL.md to the letter. Hard limits, whatever the
 prompt adds:
 

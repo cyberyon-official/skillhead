@@ -1,7 +1,7 @@
 # Contract review brief — loop-issues
 
 One round per spawn, read-only, before any code: `git grep` /
-`sed -n` ranges in `<main-repo>`, never a forge. Load `ponytail`.
+`sed -n` ranges in `<main-repo>`, never a forge. Load `skillhead:ponytail`.
 Read the issue (in `contract.md`), then the contract, then the repo:
 `CLAUDE.md` (or `AGENTS.md`) and the guides its pointers name for
 every area the contract touches (`CODING_STANDARDS.md` → per-area

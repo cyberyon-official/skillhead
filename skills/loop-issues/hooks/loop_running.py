@@ -20,8 +20,7 @@ def main(argv):
     elif mode == "stop":
         (L.run_dir() / L.session_id()).unlink(missing_ok=True)
     else:
-        sid = str(L.hook_input().get("session_id") or "")
-        if sid and (L.run_dir() / sid).is_file():
+        if L.loop_running(L.hook_input().get("session_id")):
             raise L.Refuse(MESSAGE)
 
 

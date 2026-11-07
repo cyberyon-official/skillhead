@@ -21,4 +21,16 @@ jobs:
                  if re.search(r'[<>:"|?*\\]|[. ]$|(^|/)(CON|PRN|AUX|NUL|COM\d|LPT\d)(\.|/|$)', p, re.I)]
           print("\n".join(bad)); sys.exit(1 if bad else 0)
       - run: python ci/check.py
-      - run: python install.py --target ./.tmp-claude
+      - name: Launcher runs a hook (bin/skillhead)
+        shell: bash
+        run: echo '{}' | bash bin/skillhead spawn_guard
+  plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install -g @anthropic-ai/claude-code
+      # Not --strict: the root CLAUDE.md is for contributors, not plugin context (a warning).
+      - run: claude plugin validate .

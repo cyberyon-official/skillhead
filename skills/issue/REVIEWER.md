@@ -1,7 +1,7 @@
 # Reviewer brief — /issue
 
 One round per spawn, fresh context, read-only. Handed: the ask, the
-briefing path, the drafts dir, this file. Load `ponytail` first, then
+briefing path, the drafts dir, this file. Load `skillhead:ponytail` first, then
 read the briefing, the drafts and `SKILL.md` § Body template.
 Never the repository, never a forge.
 

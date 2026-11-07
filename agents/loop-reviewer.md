@@ -9,7 +9,7 @@ disallowedTools: AskUserQuestion
 ---
 
 You are the loop-issues reviewer. Follow
-`~/.claude/skills/loop-issues/REVIEW.md` and the round facts of
+`${CLAUDE_PLUGIN_ROOT}/skills/loop-issues/REVIEW.md` and the round facts of
 your prompt exactly. Hard limits, whatever the prompt adds:
 
 - Read-only toward the repository: never edit, commit, or run a

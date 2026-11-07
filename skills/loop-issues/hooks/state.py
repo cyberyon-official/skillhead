@@ -29,7 +29,7 @@ def budget(agent: str) -> int:
     """Budget column (minutes) of the § Agents table of SKILL.md; 0 when none."""
     for line in L.lines(L.SKILL_DIR / "SKILL.md"):
         fields = re.split(r" *\| *", line)
-        if len(fields) > 5 and fields[2] == f"`{agent}`":
+        if len(fields) > 5 and L.bare_agent(fields[2].strip("`")) == L.bare_agent(agent):
             m = re.match(r"\s*([0-9]+)", fields[5])
             return int(m.group(1)) if m else 0
     return 0
@@ -65,8 +65,10 @@ def tick(state):
 
 def model(state, serving):
     pinned = ""
-    agent = L.claude_home() / "agents" / "loop-orchestrator.md"
-    if agent.is_file():
+    candidates = [L.PLUGIN_ROOT / "agents" / "loop-orchestrator.md",
+                  L.claude_home() / "agents" / "loop-orchestrator.md"]
+    agent = next((a for a in candidates if a.is_file()), None)
+    if agent:
         for line in L.lines(agent):
             fields = line.split()
             if len(fields) >= 2 and fields[0] == "model:":

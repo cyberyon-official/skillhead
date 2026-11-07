@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""PreToolUse hook (Bash) of loop-builder: no test run per lot.
+"""PreToolUse hook (Bash): no test run per lot by a loop-builder.
+
+A plugin agent cannot carry its own hooks, so this runs on every Bash call
+and acts only when the hook input names a loop-builder as `agent_type`.
 
 Matches the raw command, quoted strings included (`bash -c "…"`). The test
 commands come from the project profile (`test_patterns`); `test_allowed`
@@ -16,6 +19,8 @@ import _lib as L  # noqa: E402
 
 def main(argv):
     data = L.hook_input()
+    if L.bare_agent(data.get("agent_type")) != "loop-builder":
+        return 0
     command = str(L.tool_input(data).get("command") or "")
     profile = L.load_profile(data.get("cwd"))
     for allowed in profile["test_allowed"]:

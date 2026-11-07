@@ -86,8 +86,13 @@ class HookCase(unittest.TestCase):
             self.out = out.getvalue()
 
     @staticmethod
-    def command(c, cwd=None):
-        return json.dumps({"tool_input": {"command": c}, "cwd": cwd or "."})
+    def command(c, cwd=None, agent=None, session=None):
+        data = {"tool_input": {"command": c}, "cwd": cwd or "."}
+        if agent:
+            data["agent_type"] = agent
+        if session:
+            data["session_id"] = session
+        return json.dumps(data)
 
 
 class Bypass(HookCase):
@@ -100,7 +105,7 @@ class Bypass(HookCase):
                   "git commit \\\n  --no-verify -m x",
                   "cat > f <<EOF\nx\nEOF\njq . <<<y\ngit commit --no-verify -F f",
                   "echo \"1<<2\"\ngit commit --no-verify -m x"]:
-            self.expect("deny", self.script, self.command(c))
+            self.expect("deny", self.script, self.command(c, agent="skillhead:loop-builder"))
 
     def test_plain_git_passes(self):
         for c in ["git commit -m x", 'git commit -am "doc: forbid --no-verify"',
@@ -108,7 +113,15 @@ class Bypass(HookCase):
                   "git status -uno", "git log -n 5", "git diff --name-only", "git commit -uno -m x",
                   "git commit -amn", "git commit -m \"it's x\" && git log --format='%h' -n 5",
                   "git commit -F- <<'EOF'\nRefuses git commit --no-verify.\nEOF"]:
-            self.expect("pass", self.script, self.command(c))
+            self.expect("pass", self.script, self.command(c, agent="skillhead:loop-builder"))
+
+    def test_scoped_to_the_loop(self):
+        c = "git commit --no-verify -m x"
+        self.expect("pass", self.script, self.command(c))                       # plain session
+        self.expect("pass", self.script, self.command(c, agent="general-purpose"))
+        self.expect("pass", HOOKS / "loop_running.py", args=["start"], env={"CLAUDE_CODE_SESSION_ID": "s9"})
+        self.expect("deny", self.script, self.command(c, session="s9"))          # loop running here
+        self.expect("pass", self.script, self.command(c, session="s8"))
 
 
 class Running(HookCase):
@@ -148,6 +161,13 @@ class IssueGuard(HookCase):
         self.expect("pass", ISSUE_GUARD, self.command("glab api projects/g%2Fp/issues/12/notes -f body=x"), args=["g/p"])
         self.expect("pass", ISSUE_GUARD, self.command("gh issue create -R g/p -t x"))
         self.expect("pass", ISSUE_GUARD, self.command("rg -n 'gh issue create' docs", str(self.guarded)), args=["g/p"])
+
+    def test_plugin_option_and_scoped_publisher(self):
+        option = {"CLAUDE_PLUGIN_OPTION_GUARDED_REPOS": "o/q g/p"}
+        self.expect("deny", ISSUE_GUARD, self.command("gh issue create -R g/p -t x"), env=option)
+        self.expect("pass", ISSUE_GUARD, self.command("gh issue create -R g/p -t x",
+                                                      agent="skillhead:issue-publisher"), env=option)
+        self.expect("pass", ISSUE_GUARD, self.command("gh issue create -R z/z -t x"), env=option)
 
 
 class MergeGate(HookCase):
@@ -648,6 +668,8 @@ class SpawnGuard(HookCase):
                   "cargo via mbx, CARGO_TARGET_DIR unset; touched crates: api-key, member"]:
             self.expect("pass", self.script, spawn("loop-builder", p), env=env)
         self.expect("pass", self.script, spawn("loop-mechanic", "cargo check --workspace --all-targets"), env=env)
+        self.expect("deny", self.script, spawn("skillhead:loop-builder", "run cargo check -p member"), env=env)
+        self.expect("pass", self.script, spawn("skillhead:loop-mechanic", "cargo check --workspace"), env=env)
 
     def test_generic_defaults(self):
         for p in ["run `pytest -q` first", "then npm run lint", "go test ./...", "./gradlew test",
@@ -675,17 +697,21 @@ class BuilderNoTests(HookCase):
         env = {"LOOP_PROFILE": str(PROFILE)}
         for c in ["cargo t", "cd x && cargo nextest run -p billing", 'bash -c "pnpm -C apps/webapp test"',
                   "ci/check", "cargo nextest run -p api -E 'binary(/_unit$/) | all()'"]:
-            self.expect("deny", self.script, self.command(c), env=env)
+            self.expect("deny", self.script, self.command(c, agent="skillhead:loop-builder"), env=env)
         for c in ["cargo nextest run -p api -E 'binary(/_unit$/)' 2>&1 | tail -40",
                   "cargo check -p x --all-targets", "cargo fmt --all"]:
-            self.expect("pass", self.script, self.command(c), env=env)
+            self.expect("pass", self.script, self.command(c, agent="skillhead:loop-builder"), env=env)
 
     def test_generic_defaults(self):
         for c in ["pytest -x", "python -m pytest", "npm test", "yarn run test", "go test ./...", "mvn verify",
                   "make test", "npx vitest run"]:
-            self.expect("deny", self.script, self.command(c))
+            self.expect("deny", self.script, self.command(c, agent="loop-builder"))
         for c in ["git status", "npm run build", "cargo build", "ls tests/", "go build ./..."]:
-            self.expect("pass", self.script, self.command(c))
+            self.expect("pass", self.script, self.command(c, agent="loop-builder"))
+
+    def test_other_agents_may_test(self):
+        for agent in (None, "skillhead:loop-mechanic", "general-purpose"):
+            self.expect("pass", self.script, self.command("pytest -x", agent=agent))
 
 
 if __name__ == "__main__":
