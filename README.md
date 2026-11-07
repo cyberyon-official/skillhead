@@ -8,9 +8,19 @@ Claude Code skills that take a need from a loose description to a merged
 change, with review, QA and a single MR to the default branch — and a
 project template that gives any repo the structure those skills read.
 
-Forked from [`rbaumier/skills`](https://github.com/rbaumier/skills) and cut
-down to two workflows and the skills they load. Every script is
-standard-library Python and runs on Linux, macOS and Windows.
+Every script is standard-library Python and runs on Linux, macOS and
+Windows.
+
+## Credits
+
+skillhead is built on [Romain Baumier](https://github.com/rbaumier)'s
+[`rbaumier/skills`](https://github.com/rbaumier/skills). The `/issue` and
+`/loop-issues` workflows — the contract reviewed before any code, the
+review loop, the integration branch, the QA gate — are his design, as is
+the "one rule, one place" project structure the template follows.
+skillhead keeps those two workflows and the skills they load, and makes
+them portable: stdlib Python hooks, a per-project profile instead of a
+hard-wired stack, a Claude Code plugin. Thanks, Romain.
 
 ## Install
 
