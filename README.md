@@ -93,5 +93,5 @@ with Python 3.10 and 3.13, and rejects any path that is invalid on NTFS.
 
 ## Licence
 
-The upstream repository has no licence. Get the author's agreement before
-publishing or redistributing this fork.
+MIT — see `LICENSE`. Derived from [`rbaumier/skills`](https://github.com/rbaumier/skills)
+(MIT, Romain Baumier); third-party parts are listed in `THIRD_PARTY.md`.
