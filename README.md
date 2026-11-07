@@ -17,13 +17,13 @@ standard-library Python and runs on Linux, macOS and Windows.
 skillhead is a Claude Code plugin; this repository is also its marketplace.
 
 ```
-/plugin install skillhead --marketplace gchauvet/skill-ed
+/plugin install skillhead --marketplace gchauvet/skillhead
 ```
 
 On Claude Code before 2.1.275, in two steps:
 
 ```
-/plugin marketplace add gchauvet/skill-ed
+/plugin marketplace add gchauvet/skillhead
 /plugin install skillhead@skillhead
 ```
 

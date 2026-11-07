@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "description": "From a loose need to a merged change: /issue writes minimal, need-only issues; /loop-issues implements them autonomously with a reviewed contract, diff review, an integration branch, QA and one MR to the default branch.",
   "author": {"name": "Guillaume Chauvet", "email": "contact@cyberyon.pro", "url": "https://github.com/gchauvet"},
-  "homepage": "https://github.com/gchauvet/skill-ed",
-  "repository": "https://github.com/gchauvet/skill-ed",
+  "homepage": "https://github.com/gchauvet/skillhead",
+  "repository": "https://github.com/gchauvet/skillhead",
   "keywords": ["issues", "autonomous", "loop", "code-review", "qa", "worktrees"],
   "userConfig": {
     "guarded_repos": {
