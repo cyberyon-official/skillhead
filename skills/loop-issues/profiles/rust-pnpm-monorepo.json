@@ -1,0 +1,30 @@
+{
+  "$comment": "Profile of a Rust (cargo nextest, mbx) + pnpm monorepo — the original Natalia setup. Copy to <repo>/.claude/loop-issues.json and adapt. Keys absent here take the generic defaults of hooks/_lib.py; a key `<name>_extra` appends to the default list instead of replacing it.",
+  "test_patterns": [
+    "cargo +(test|t)(?!\\w)",
+    "nextest +(run|r)(?!\\w)",
+    "vitest",
+    "playwright",
+    "pnpm( +-C +\\S+)? +(run +)?test(?!\\w)",
+    "ci/check",
+    "ci/lib/merge",
+    "slot\\.py +gate"
+  ],
+  "test_allowed": [
+    "cargo nextest run -p api -E ['\"]binary\\([^)'\"]*_unit[^)'\"]*\\)['\"]( 2>&1)?\\s*(?P<keep>\\||&&|;|$)"
+  ],
+  "test_allowed_hint": "cargo nextest run -p api -E 'binary(/_unit$/)'",
+  "gate_patterns": [
+    "cargo +(check|clippy|nextest|test)",
+    "nextest",
+    "-p +api([^\\w-]|$)",
+    "comply(-workspace)? +-",
+    "comply-workspace",
+    "clippy",
+    "pnpm( +-C +\\S+)? +(check|test|lint)",
+    "vitest"
+  ],
+  "frontend": "^apps/(web|webapp)/",
+  "generated": "(^|/)(openapi\\.json|pnpm-lock\\.yaml|Cargo\\.lock)$|(^|/)\\.sqlx/",
+  "toolchain_notes": ".claude/loop-issues-toolchain.md"
+}

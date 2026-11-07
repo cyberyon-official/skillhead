@@ -1,0 +1,24 @@
+name: hooks
+on: [push, pull_request]
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.10", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: NTFS-safe paths
+        shell: python
+        run: |
+          import re, subprocess, sys
+          bad = [p for p in subprocess.run(["git", "ls-files"], capture_output=True, text=True).stdout.splitlines()
+                 if re.search(r'[<>:"|?*\\]|[. ]$|(^|/)(CON|PRN|AUX|NUL|COM\d|LPT\d)(\.|/|$)', p, re.I)]
+          print("\n".join(bad)); sys.exit(1 if bad else 0)
+      - run: python ci/check.py
+      - run: python install.py --target ./.tmp-claude

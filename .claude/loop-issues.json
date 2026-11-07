@@ -1,0 +1,12 @@
+{
+  "$comment": "Profile read by the /loop-issues hooks. Missing keys = generic defaults; <key>_extra appends to the defaults.",
+  "frontend": "",
+  "generated": "(^|/)(package-lock\\.json|pnpm-lock\\.yaml|yarn\\.lock|bun\\.lockb|poetry\\.lock|uv\\.lock|go\\.sum|Cargo\\.lock)$",
+  "toolchain_notes": "docs/agents/toolchain.md",
+  "test_patterns_extra": [
+    "\\bci/check\\.py\\b"
+  ],
+  "gate_patterns_extra": [
+    "\\bci/check\\.py\\b"
+  ]
+}

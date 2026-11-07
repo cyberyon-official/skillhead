@@ -1,0 +1,8 @@
+{
+  "$comment": "Minimal profile: every key is optional. Defaults (hooks/_lib.py) cover cargo, npm/pnpm/yarn/bun, pytest, go, maven/gradle, dotnet, make/just, rspec, phpunit, mix, swift.",
+  "frontend": "^(src/(components|pages|app)|web)/",
+  "generated": "(^|/)(package-lock\\.json|pnpm-lock\\.yaml|yarn\\.lock|poetry\\.lock|uv\\.lock|go\\.sum|Cargo\\.lock)$",
+  "test_patterns_extra": [],
+  "gate_patterns_extra": [],
+  "toolchain_notes": ""
+}

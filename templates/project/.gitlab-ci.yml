@@ -1,0 +1,8 @@
+check:
+  image: python:3-slim
+  script:
+    - apt-get update -qq && apt-get install -y -qq git >/dev/null
+    - python ci/check.py
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "{{DEFAULT_BRANCH}}"

@@ -1,0 +1,270 @@
+# Builder brief — loop-issues
+
+You run ONE phase per spawn, named in your prompt: `contract`,
+`build <k>` or `ship <r>` (agent `loop-builder`); the mechanical
+`pack` and `deliver` phases belong to `loop-shipper` (`SHIPPER.md`). Each phase starts in a fresh context
+from the files of the report dir. You spawn nothing: mechanical
+work you cannot do in the phase is a task line under `## Mechanic`
+of your note, which the orchestrator hands to a `loop-mechanic`
+after you. What you read is what you need for THIS phase: the contract,
+the notes of the previous phases, and the files of your slice. Read
+`RENDEZVOUS.md` § Report before writing.
+
+The forge is `glab api` in Bash (issues, MR; uploads per
+`PRESENTATION.md` § Captures); list calls are
+filtered (`state=opened&labels=…&per_page=20`), never a full list.
+Code is written with `Edit`/`Write`, never a heredoc. A grep names a
+path and ends in `| head -40`; a file is never re-read after your
+own edit, you know what you wrote. Every long command is truncated
+at the source: `2>&1 | tail -40`, or a grep of the error lines. A raw `cargo`, `pnpm`, `comply` or test
+output never enters the context; a failing gate is re-run on the one
+crate or package that failed. Test code never enters your context
+unless you are writing it: `git grep` with `-- ':!**/tests/**'
+':!*_it.rs' ':!*/tests.rs' ':!*.test.*'`, and `sed -n` ranges that
+stop before a `#[cfg(test)]` line.
+
+## Phase `contract` — before any code
+
+Read the issue, then `CLAUDE.md`/`AGENTS.md`, `CONTEXT.md`,
+`docs/adr/`, and every guide their pointers name for the areas the
+issue touches (`CODING_STANDARDS.md` → per-area guides when present):
+guides are disclosed by pointer, never preloaded. Read code with `git grep` and `sed -n` ranges.
+Load `quality-bar` and `ponytail`.
+Write `<report-dir>/contract.md`:
+
+- `Need` — one line per acceptance criterion, `- N<k> — <what a
+  user or operator observes>`. A criterion that names a code shape ("one
+  composition root", "tested without a socket") is read as its
+  observable effect; write the reduction. NEEDS-CLARIFICATION only
+  for a product decision the issue leaves open or a dependency
+  neither merged nor MR-covered; post the questions on the issue
+  first. A criterion only a per-lot e2e stack would prove → partial
+  lot `refs #<n>`, the criterion left open on the issue.
+  Every acceptance criterion and every constraint the issue states
+  (a ceiling, a bound, a per-organization limit) keeps its `Need`
+  line through any later rewrite of the contract: dropping one, or
+  reducing it to a log line, is the recurring blocker of contract
+  reviews and a major at code review. A new secret or env var names
+  its deployment sites (env example, deploy manifests, README) in
+  `Shapes`.
+- `Shapes` — the shapes the diff will contain, and nothing else:
+  files touched, and every NEW type, trait, module, table, column,
+  route or dependency, each paying with a second caller on `<base>`
+  today or the issue line that needs it. `Shapes: none new` is
+  the expected value. A shape absent from this list may not appear
+  in the diff without a line under `## Deviations from plan`. First line
+  ``- Files: `<path>`, …`` (the overlap check between lots reads
+  it); each existing symbol, field or route the diff changes is one
+  line ``- changed `<item>` — read by: <its readers, by grep, or
+  none (the grep)>``.
+- `Reuses` — one line per transverse mechanism, `<symbol>
+  (<file>)`, proven by your grep. A changed rule (format, time zone, population,
+  bound) lists every site that rebuilds it by hand (grep), each in `Shapes` or refuted.
+- `Tests` — the CLOSED list of tests, one per acceptance criterion
+  and per named risk, at the layer where the criterion is observed (a
+  screen → a screen test), none for an implementation choice. Every
+  boundary the diff opens or changes (a body, a query parameter, a
+  webhook, a claim) carries the hostile cases QA otherwise finds
+  after `deliver`, one test each where it applies: invisible or NUL
+  characters in a text field, two concurrent requests on the same
+  id, another tenant's id, a deleted tenant, the screen's own read or
+  write failing (the skeleton ends, the retry works), a PATCH omitting
+  a field (kept), 10 kB in an indexed text column, inverted or extreme
+  date bounds. Most QA NO-GO are
+  these, each paid 35 min to 2 h after delivery. Each line:
+  `<file>::<test_name> — <layer> — <the bug that slips if it
+  breaks> — arrange / act / assert in one sentence — doubles:
+  <existing double or none> — (N<k>, …)`; a user-visible `Need` has its e2e line per
+  `docs/tests-e2e.md` (`— broken gesture: <line> —`; a missing `e2e/src/vendor-sink.mjs` route is the lot's). Nobody adds a test outside
+  this list. `hooks/check.py contract` refuses a `Need` line without
+  its `N<k>` id, a `N<k>` no `Tests` bullet names, a `Shapes` without
+  its `- Files:` line, a `changed` line without a filled `read by:`
+  and a front lot's `N<k>` without its `e2e/` line.
+- `Changed tests` — the CLOSED list of existing test files or tests
+  the lot may edit or delete, `<file>[::<test>] — <the issue line
+  that changes the behaviour it pins>`; `none` is the expected
+  value; a deleted spec cites its "no longer exists" criterion. No human reads an automerged diff: an existing test bent to
+  get green is a regression shipped; the pack blocks any outside it.
+- `E2e impact` — the specs the lot affects, found without running
+  anything: a grep of the repo's e2e dir on every route, API field,
+  visible string, default value and e2e helper the lot changes, plus
+  the spec the e2e doc names for each screen in `Shapes` (a changed
+  helper reaches every spec calling it). One line per spec, `- <path>
+  — changed | intact — <why>`; a `changed` spec is in `Changed
+  tests`; no e2e surface → `- none — <why>`. `check.py contract`
+  refuses it empty, a path absent from the base, a `changed` outside
+  `Changed tests`.
+- `Slices` — the ordered build slices, each one fresh context:
+  the files, shapes and tests of the contract it delivers, the
+  skills beyond quality-bar + ponytail + language it needs (each with the
+  trigger that pays it, else none), and the gate it must pass alone
+  (`cargo check -p <crate>`, `pnpm check`).
+  A slice compiles on its own; the test file of a slice belongs to
+  that slice. ONE slice is the default: every slice re-reads the
+  brief, the contract and the files, so a second slice exists only
+  when two disjoint crates or packages cannot compile together, and
+  its line names them. Two is the ceiling; more →
+  NEEDS-CLARIFICATION with the proposed split, the issue is too big.
+  A criterion deferred ("deferred", "later") is a split decided here,
+  named in the contract, never a remainder found after delivery,
+  which comes back 11 to 22 h later.
+- `Stack` (`<base>` when a dependency has an open MR, draft mode
+  only; autonomous never stacks: `blocked by #<m>`, and the
+  orchestrator re-queues the lot), `Mesure` (hot
+  path + bar, or `none`),
+  `Risques` (convention deleted, ADR bent, issue line lifted with the
+  refuting grep; a change of who holds or reads a right or scope names
+  every consumer of it, by grep, each with a test).
+
+Write nothing you would not defend against "delete it and nothing is
+lost". Write `contract.md`, end `CONTRACTED <contract.md>`. A
+`CONTRACT-REWORK` path in your prompt → amend `contract.md` in place,
+`## Answer to review <c>` one line per finding (`applied — <what>`
+or `refuted — <grep or issue line>`; no evidence = applied), same
+end line; the reviewer reads it again, cap 3 rounds. From `build 1` on the contract is frozen: a shape it lacks is
+an `## Deviations from plan` line, never an edit of `contract.md`.
+
+## Phase `build <k>` — one slice
+
+- Slice 1 creates the worktree:
+  ```bash
+  git fetch origin <integration>
+  wt=../<repo>-worktrees/slot-<s>
+  [ -d "$wt" ] || git worktree add -q --detach "$wt" origin/<integration>
+  case "$wt" in */<repo>-worktrees/slot-[0-9]*) ;; *) echo "refused: wt=$wt"; exit 1;; esac
+  [ -d "$wt" ] && [ "$(git -C "$wt" rev-parse --show-toplevel)" != "$(git rev-parse --show-toplevel)" ] || exit 1
+  git -C "$wt" reset -q --hard && git -C "$wt" clean -fdq && git -C "$wt" switch -q -C agent/issue-<n> origin/<integration>
+  ```
+  Each line runs as its own command; a failed `fetch` stops here (rerun
+  it, sandbox disabled on an ssh refusal), never the next line. `reset
+  --hard` and `clean` run only in a slot worktree: in the main checkout
+  they deleted every untracked file (2026-10-19).
+  Stacked → `origin/<base>`; split → branch suffix `-t<k>`. Wire it, with
+  `CARGO_TARGET_DIR` unset (mbx manages the target). The slot's env
+  is injected into every command that names or runs from the
+  worktree (SKILL.md Step 0, slot env hook): never re-source it, write
+  slot commands `cd <worktree> && …`. Later
+  slices read `<report-dir>/slice-<k-1>.md` first. Edit ONLY
+  worktree paths. A `contract-review-<c>.md` in your prompt: its
+  `minor` lines amend the contract as you read it, no rewrite.
+- Load `quality-bar`, `ponytail`, the language skill
+  of the slice's files and every skill or doc the repo's CLAUDE.md
+  routes the slice's area to; nothing else by default. Another installed
+  domain skill (picked by its description) is loaded only when the
+  contract's `Slices` line names it with its trigger (`testing` —
+  a harness or double changes; `api-design` — a new route or a
+  changed wire contract); a skill loaded for a file the slice does
+  not touch is context paid for nothing.
+- **Shape rules** (each breach is a review finding):
+  - one type per state; one method per write; no service / port /
+    repository mirror layer for a single query — the seam that owns
+    the concern;
+  - no struct or trait to carry arguments; no port for a test double;
+  - no hand-written parser; no hand-written `Debug` — secrets and
+    tenant data in `Secret`, then `#[derive(Debug)]`;
+  - a mechanism the repo has is consumed, never mirrored; "like the
+    sibling" is not a reason;
+  - a comment says a why the code cannot; one that restates the code
+    is deleted; one doc sentence per `pub` item. Comment lines ÷
+    added lines (generated excluded) ≤ 1/10 before the pack; a comment
+    sentence ≤ 10 words, a block ≤ 30, never wrapped mid-sentence.
+- A shape outside `Shapes`, or a decision changed against the
+  contract → `## Deviations from plan` with the issue line that pays it.
+- An existing test file you touch in a build (a fixture field, a
+  visibility, a `mod` line) gets its `Changed tests` line in the
+  same commit: the pack's guard reads only that list (4 lots
+  blocked or relisted for it, 2026-10-15).
+- **Tests.** Tests live in their own files, never inline, in the
+  repo's own convention (the testing guide `CLAUDE.md`'s pointers lead to names the
+  unit, integration and frontend layouts). You
+  write the code and, per test file of the contract, the FIRST test:
+  it fixes the file, the helpers, the double and the assertion
+  style. The remaining tests of the contract's `Tests` list go
+  under `## Mechanic` of the slice note: the list verbatim, the
+  worktree, the reference test path per file, and the rule "no new helper, double, type or test
+  outside the list; commit `wip(<scope>): tests slice <k>`". Three
+  tests or fewer: write them yourself, no task.
+- Other mechanical work (codegen, fixture rewrites) is yours; a
+  batch too long for the phase → one more `## Mechanic` line.
+- While you write, `cargo check -p <crate> --all-targets`
+  (`--features test-util` when the crate declares it; `pnpm
+  check` for a front package) is your compiler loop, and it compiles
+  the tests too. No test run, `ship` included: every test but e2e (the closing's ① ②, SKILL.md § Closing, and `ci/release`; never by the lot) runs once,
+  on `<integration>`, at the closing (user, 2026-10-20); `/verify` does not apply to a lot; a test the contract requires run once (`hostile_probe` writing `survivors.txt`) is a `## Mechanic` task. `cargo clean`, mass `touch`,
+  `CARGO_INCREMENTAL=0` banned. No `comply` of your own (the pack runs it on the range), except
+  the final `ship`: comply on its fix's files, each finding on a line its commit adds paid.
+  The repo's formatters on the touched packages before every
+  commit, `ship` included: a formatting red found at `deliver` costs
+  an amend and a re-run. A slice that
+  touches `openapi.json` regenerates every generated client of
+  Step 0 and passes the webapp's `pnpm check` and `pnpm -C e2e
+  typecheck`. Commit `wip(<scope>): slice <k>`
+  with explicit files. Write `<report-dir>/slice-<k>.md`: what
+  exists now (symbols, files), what the next slice must know, deviations
+  so far, `## Skills` (`<skill> — <trigger> — <decision it
+  changed>`), `## Mechanic` when tasks remain, ≤ 25 lines. End: `SLICED <k> <slice-k.md>`. The last slice
+  ends the same way; the orchestrator spawns `pack`.
+
+## Phase `ship <r>` — after review round `r`
+
+A `close.md` or a closing QA verdict in your prompt instead of a
+review: create the worktree as slice 1 does (from
+`origin/<integration>`), fix every row the closing attributes to your
+lot (a `#closing-fix-<k>`: its group) (or refute it with the code line and the evidence file; a
+refutation with no line is a fix; a row contradicting a rule the
+user validated is refuted citing that rule, never coded), and nothing else; each fix adds its reproducing test
+with its `broken gesture` as an `## Deviations from plan` line, a
+pre-existing finding is a `## Unpaid findings` line. The contract's `Changed tests` still bounds
+the tests you may touch, a test outside it is a `## Deviations from plan`
+line with the issue line that pays it, never a silent edit — and, in
+the same commit, its line added to `Changed tests` (the pack's guard
+reads only that list: an deviation alone blocks the pack, 2026-10-15).
+
+Read `pack-<r>.md` (§ Gates, § Comply) and `review-<r>.md` handed in
+your prompt. Fix every finding that removes or corrects code, `nit`
+included, every occurrence; a red gate of the pack is fixed here; a
+comply group `fix` is paid — a comment finding by deleting the
+comment, never by chopping its sentences — `FP` groups, only on
+lines the lot added (any other is `fix`, generated paths
+excepted), are listed for the
+shipper with the reason each. Before the commit,
+`quality-bar-review` on the fix diff alone, each finding paid
+in that commit: a fix that breeds the next finding costs a round. Any existing test you edit (a review fix
+included) gets its `Changed tests` line in the same commit, with the
+issue line or review finding that changes the behaviour it pins; no
+such line → restore the test and fix the code. A test guard `BLOCKED`
+is paid the same way: a listed line when the issue or a finding pays
+the edit, else the test restored — never a list widened to get green. A wrong sentence in a loop report (pack,
+ship, review, Breaker map) is corrected in place, without a finding. `→ issue` findings NEVER become issues: the
+loop files nothing on the forge. Small and inside a file the lot
+already touches → pay it here; otherwise ONE line under
+`## Unpaid findings` in the report, `- <path:line> — <finding> —
+<reason>`, and nothing else; every `unpaid` disposition gets its
+line there, the merge feeds them to the registry. A drop carries evidence: false
+positive (the line), repo convention (the file), or remedy dearer
+than the defect (the grep or measure). Re-run the compiler loop of each
+crate or package you touched, never a test: the shipper
+does. Commit on top of the pack commit with explicit files.
+
+`REWORK` → your commit goes to `pack <r+1>` and a new review that
+re-judges each disposition, so a `fixed` names commit and line.
+Round 3 (the cap) ships anyway: what stays open goes under
+`## Not converged`, posted as the MR comment.
+
+**Breaker map.** No user-reachable surface changed → `QA: not run —
+<reason>`, never on a lot touching Step 0's Frontend app dirs. Else
+the contract's `Need`, `Tests` and touched surfaces (screens,
+routes, channels), the seed each needs on top of the launch pack's
+recipe and environment (never beside, never rewritten), the captures
+(screen, state, before/after) with their placement. It waits for the
+closing, never goes to the reviewer.
+
+**Write.** `REWORK` before round 3: `<report-dir>/ship-<r>.md` =
+disposition table (`fixed <commit> <file:line>` / `unpaid — <reason>` /
+`dropped — <evidence>`) + comply decisions, nothing else. Otherwise
+read `PRESENTATION.md` NOW and write `<report-dir>/mr-description.md`
+in full (prose, `to validate:`, visual, `Closes #<n>`, the `<details>`
+block, capture placeholders `<!-- capture: <screen> -->`), then
+`ship-<r>.md`: disposition table, comply decisions (fix paid / FP
+groups with reasons), Breaker map or skip, captures list, deviations, flags,
+`## Not converged`. End `SHIPPED <ship-<r>.md>`.

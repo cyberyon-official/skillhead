@@ -1,0 +1,139 @@
+# Rendezvous — loop-issues
+
+How the orchestrator waits on a child and how a child reports. Only
+the orchestrator spawns and waits on phases; every other agent is a
+leaf and reads § Waiting and § Report.
+
+## Harness facts
+
+- A child spawned with `Agent` keeps its parent **resumable**: the
+  parent ends its turn, the child's completion notification resumes
+  it. Nothing else does. A parent that ends its turn with no live
+  `Agent` child is **finished**: its Monitor events and
+  background-command completions are **parked** — undelivered until a
+  SendMessage resumes it — and its children's later notifications fall
+  through to the root session.
+- A child resumed by SendMessage is not a live child; only a fresh
+  `Agent` spawn is.
+- The root session is the catch-all: it receives whatever no live
+  parent can. A subagent receives only what its live children send.
+- Foreground `sleep` is blocked by the harness; Bash wait loops
+  (`until`/`while`/`for` + `sleep`) are BANNED everywhere.
+
+## Waiting — the only way
+
+Spawn with `Agent`, finish the foreground work you already have, then
+end your turn. Nothing to "keep busy": no polling, no `echo ok`, no
+Monitor on a `.done`. Two children in flight → the first completion
+resumes you; the other still running → end your turn again.
+
+Work that must finish before you continue (trio, comply, gates, a
+readiness probe) runs in the FOREGROUND, Bash `timeout: 600000` (the
+default backgrounds it after ~3 min): one bounded `curl -sf --retry 60
+--retry-delay 2 --retry-all-errors --retry-connrefused --max-time 2
+<url>`, never a loop; a
+command that cannot finish inside the 10-min Bash cap is split
+(check / test / build apart, tests by package), never backgrounded.
+A long-lived process (dev server) is backgrounded and never awaited.
+
+A gate you background does not wake you — it puts you to sleep. A
+phase that answers "the suite is in flight, I'll report on
+completion" has reported nothing and burnt a turn; the orchestrator
+has to resume it by hand. Measured 2026-09-21/22: one rebase lost an
+hour to two such turns, and four phases each fired five to eight
+phantom completions afterwards, one per leftover timer, every one of
+them saying only "no action needed". Never arm a Monitor or a
+background timer to wait on your OWN command: block on it in the
+foreground, and when it exceeds the cap, split it. A leaf that ends
+its turn saying it is waiting on a background gate has violated this
+brief: the orchestrator treats it as a brake (SKILL.md § Slowness is
+yours), not as progress.
+
+The orchestrator never ends its turn on a transition: the next spawn
+is in flight before it writes the summary line, at every phase, and
+nothing — no sub-orchestrator, no per-slot orchestrator — sits
+between it and the leaves.
+
+Needing a child again (re-check, QA re-run) = a NEW spawn handed
+the previous report path — never a SendMessage to the old one.
+
+Context close to compacting mid-issue: commit `wip:` in the worktree
+and write `<report-dir>/resume-note.md` (done, next step, open gates)
+BEFORE it hits — the auto-summary is not the trail; resume from the
+note.
+
+## Where reports live
+
+NEVER under `/tmp` (nor `/private/tmp`). The OS purges it: measured
+2026-09-22, a full disk triggered a purge that wiped an entire loop's
+trail mid-flight — three issues lost their contract, pack and review
+files while their agents were still reading them. Reports live beside
+the checkout, outside every worktree, at the path the repo's launch
+pack names (default `<main-repo>/../loop-reports/loop-<n>/`). The orchestrator
+hands that absolute path in every spawn.
+
+## Report — every agent
+
+Write the report in the scratchpad (outside any worktree), then
+`<report>.done` — ONE line, verdict + report path — as your LAST
+write; end your final text with that same line. Never SendMessage.
+The notification wakes the parent; the `.done` carries the verdict.
+
+## Fall-through — orchestrator only
+
+- A grandchild's notification (a child of the QA executor) lands on
+  you ⇒ it finished without its verdict. SendMessage it that
+  notification's one line + `resume`, once per notification.
+- A notification that reports the agent's turn limit (`maxTurns`:
+  250, 300 for `loop-builder`) ⇒ `BLOCKED` with the reason « turn
+  ceiling », handled as that phase's `BLOCKED` (SKILL.md step 3; a
+  phase without one → step 5), never resumed.
+- A builder's or shipper's notification without its `.done` ⇒ stalled.
+  SendMessage `resume: finish #<n> — <what its last line promised>`.
+  Third stall on one issue ⇒ step 5.
+
+## Watchdog — orchestrator only
+
+Armed once at Step 0 — `CronCreate` (load it via ToolSearch),
+recurring `9,29,49 * * * *`, session-only, auto-expires after 7 days —
+with this prompt:
+
+> loop-issues watchdog. A user message since the loop's last spawn
+> that does not ask to continue (an interruption, a stop; a message
+> that set `mode:`, SKILL.md § Rules, is none) → CronDelete
+> this job, run `python3 ~/.claude/skills/loop-issues/hooks/loop_running.py
+> stop`, reply ⏹ + `💡 /reflect — mine this run`. Else run
+> `python3 ~/.claude/skills/loop-issues/hooks/state.py tick <state.md>`:
+> `paused until …` → reply ⏸ alone; `drained` → the drained stop
+> (SKILL.md § The loop); `draining` → all below but step 1. Else ListAgents:
+> a builder or reviewer of this loop running → reply ⏳ — but a
+> second consecutive ⏳ with no new side effect from it (commit, push,
+> report file, forge note) → it stalled: § Fall-through. Else a
+> builder finished without its `.done` (not at its turn ceiling) → resume it (RENDEZVOUS.md § Fall-through). Else run the
+> loop from step 1 — past a pause, the lots of `state.md` at their
+> phase first; step 4 first when a report awaits verification,
+> a `held: contract` spawn of `state.md` first of all (SKILL.md § The loop).
+> Before any of it: a phase over its budget or a report naming an
+> obstacle → SKILL.md § Slowness is yours, first. No recap.
+
+It fires only while you are idle — exactly the dead state it exists
+for — and it IS the empty-queue re-poll: an empty queue never
+deletes it, only a user stop or the disk, model or drained stop
+does.
+
+After every spawn, rewrite `<report-root>/state.md`: `mode: run`,
+`drain` or `pause-until <UTC ISO-8601>`; one line per slot, `slot
+<s>: free` or `slot <s>: #<n> <phase> <subagent_type> since <spawn
+time, UTC ISO-8601> — <report dir>`, its 🐢 kept while the phase is
+unchanged; at its notification, `since <time>` becomes `done` until
+the next spawn of the slot, so a finished phase never ages; `planned: <N>
+(+<k>)`; `queue:` — the run's scope (SKILL.md step 1), each issue the
+loop creates appended; one `done: #<n> <summary line>[ rework]` per finished lot
+(SKILL.md step 6); the skip list; a `held: contract #<n> — <disk reason>`
+or `stopped: <disk|model|drained> — <reason>` line (SKILL.md § The
+loop, Step 0); the Step 0 facts path — nothing else: brakes and
+history go to `freins.md`. A compaction, or a fire answered
+`Prompt is too long`, means the session is spent: the user's next
+`/loop-issues` in a fresh session resumes from `state.md`, so it is
+always current; a session that goes on anyway re-reads it before any
+spawn. A usage-limit stop is resumed the same way.

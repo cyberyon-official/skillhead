@@ -1,0 +1,13 @@
+{
+  "$comment": "Merge gate steps, in order. `run` is a POSIX shell command (Git Bash on Windows). `{python}` = the interpreter running ci/check.py.",
+  "steps": [
+    {
+      "name": "hooks",
+      "run": "{python} skills/loop-issues/hooks/test_hooks.py"
+    },
+    {
+      "name": "template",
+      "run": "{python} templates/test_template.py"
+    }
+  ]
+}
