@@ -27,13 +27,13 @@ hard-wired stack, a Claude Code plugin. Thanks, Romain.
 skillhead is a Claude Code plugin; this repository is also its marketplace.
 
 ```
-/plugin install skillhead --marketplace gchauvet/skillhead
+/plugin install skillhead --marketplace cyberyon-official/skillhead
 ```
 
 On Claude Code before 2.1.275, in two steps:
 
 ```
-/plugin marketplace add gchauvet/skillhead
+/plugin marketplace add cyberyon-official/skillhead
 /plugin install skillhead@skillhead
 ```
 
