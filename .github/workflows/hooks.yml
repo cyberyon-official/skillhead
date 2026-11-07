@@ -21,9 +21,16 @@ jobs:
                  if re.search(r'[<>:"|?*\\]|[. ]$|(^|/)(CON|PRN|AUX|NUL|COM\d|LPT\d)(\.|/|$)', p, re.I)]
           print("\n".join(bad)); sys.exit(1 if bad else 0)
       - run: python ci/check.py
-      - name: Launcher runs a hook (bin/skillhead)
+      - name: Launcher runs a hook (bin/skillhead), with a native CLAUDE_PLUGIN_ROOT
         shell: bash
-        run: echo '{}' | bash bin/skillhead spawn_guard
+        run: |
+          root="$PWD"; command -v cygpath >/dev/null && root="$(cygpath -w "$PWD")"
+          echo "CLAUDE_PLUGIN_ROOT=$root"
+          spawn='{"tool_input":{"subagent_type":"skillhead:loop-builder","prompt":"run cargo check -p x"}}'
+          set +e
+          echo "$spawn" | CLAUDE_PLUGIN_ROOT="$root" bash bin/skillhead spawn_guard
+          code=$?
+          echo "exit $code"; test "$code" -eq 2
   plugin:
     runs-on: ubuntu-latest
     steps:

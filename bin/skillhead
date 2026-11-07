@@ -6,7 +6,9 @@
 #   skillhead guard_issue_create …       skills/issue/hooks/guard_issue_create.py
 #   skillhead new_project <dir> …        new_project.py
 set -u
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Hooks get CLAUDE_PLUGIN_ROOT (a native path on Windows); the Bash tool finds
+# this file on PATH, as a POSIX path.
+root="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 name="${1:?usage: skillhead <script> [args…]}"
 shift
 case "$name" in
