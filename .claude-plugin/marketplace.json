@@ -1,0 +1,15 @@
+{
+  "name": "skillhead",
+  "owner": {
+    "name": "Guillaume Chauvet",
+    "email": "contact@cyberyon.pro"
+  },
+  "description": "skillhead: Claude Code workflows that take a loose need to a merged change.",
+  "plugins": [
+    {
+      "name": "skillhead",
+      "source": "./",
+      "description": "Portable /issue and /loop-issues workflows: minimal issues, then an autonomous implementation loop with review, QA and one MR."
+    }
+  ]
+}

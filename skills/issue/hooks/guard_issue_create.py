@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """PreToolUse hook: only issue-publisher creates issues on the listed repos.
 
-  guard_issue_create.py <owner/repo>…
-Matchers: Bash, and a forge MCP's create_issue (its project_id). With no
-repo listed, the hook passes everything.
+  guard_issue_create.py [<owner/repo>…]
+The repos are the arguments plus the plugin option `guarded_repos`
+(CLAUDE_PLUGIN_OPTION_GUARDED_REPOS, space-separated). Matchers: Bash, and
+a forge MCP's create_issue (its project_id). With no repo, everything passes.
 """
 import json
+import os
 import re
 import subprocess
 import sys
@@ -46,10 +48,11 @@ def origin(cwd: str) -> str:
 
 
 def main(repos) -> int:
+    repos = list(repos) + os.environ.get("CLAUDE_PLUGIN_OPTION_GUARDED_REPOS", "").split()
     if not repos:
         return 0
     data = read_input()
-    if data.get("agent_type") == "issue-publisher":
+    if str(data.get("agent_type") or "").rsplit(":", 1)[-1] == "issue-publisher":
         return 0
     tool = data.get("tool_input") if isinstance(data.get("tool_input"), dict) else {}
     command = str(tool.get("command") or "")

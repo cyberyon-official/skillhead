@@ -1,20 +1,6 @@
 ---
 name: loop-issues
 description: Standing implementation loop — autonomously implement the issues the invocation names (and those the loop creates), nothing else. Per issue — an opus builder in fresh phases (contract of shapes, build slices, ship), one opus contract review before any code, a sonnet shipper for pack and deliver (comply triage, MR), opus review rounds (ponytail-review + quality-bar-review) judged on unpaid shapes until convergence (cap 3), push as draft, merge into the run's integration branch after a workspace check, repeat; once that scope is drained or on « close the loop », full gates and one QA on that branch, then one MR to the default branch.
-hooks:
-  PreToolUse:
-    - matcher: Bash
-      hooks:
-        - type: command
-          command: 'python3 "$HOME/.claude/skills/loop-issues/hooks/refuse_hook_bypass.py"'
-    - matcher: AskUserQuestion
-      hooks:
-        - type: command
-          command: 'python3 "$HOME/.claude/skills/loop-issues/hooks/loop_running.py"'
-    - matcher: Agent
-      hooks:
-        - type: command
-          command: 'python3 "$HOME/.claude/skills/loop-issues/hooks/spawn_guard.py"'
 ---
 
 # Loop orchestrator
@@ -24,11 +10,11 @@ repo — no `git grep/show/diff/log`, no Read on project files, no full
 issue bodies. Your only evidence: agent reports + forge API.
 
 Briefs live next to this file: the builder reads
-`~/.claude/skills/loop-issues/BUILDER.md`, the shipper
-`~/.claude/skills/loop-issues/SHIPPER.md`, the contract reviewer
-`~/.claude/skills/loop-issues/CONTRACT-REVIEW.md`, the code reviewer
-`~/.claude/skills/loop-issues/REVIEW.md`; every agent reads
-`~/.claude/skills/loop-issues/RENDEZVOUS.md` — the only way anyone waits or reports. Each
+`${CLAUDE_PLUGIN_ROOT}/skills/loop-issues/BUILDER.md`, the shipper
+`${CLAUDE_PLUGIN_ROOT}/skills/loop-issues/SHIPPER.md`, the contract reviewer
+`${CLAUDE_PLUGIN_ROOT}/skills/loop-issues/CONTRACT-REVIEW.md`, the code reviewer
+`${CLAUDE_PLUGIN_ROOT}/skills/loop-issues/REVIEW.md`; every agent reads
+`${CLAUDE_PLUGIN_ROOT}/skills/loop-issues/RENDEZVOUS.md` — the only way anyone waits or reports. Each
 pinned agent already names its brief: a spawn prompt never renames
 one (a `REVIEWER.md` that does not exist cost a `find` in 41
 reviews). A spawn prompt hands facts and the
@@ -41,7 +27,7 @@ and QA run once, on `<integration>`, at the closing (§ Closing —
 user, 2026-10-20: no test per lot); a
 prompt that asked for the full trio at pack cost ~15 min on one lot,
 2026-09; four slots compiling the full gates per lot froze the
-machine, 2026-10-15). `hooks/spawn_guard.py` refuses a phase prompt
+machine, 2026-10-15). `skillhead spawn_guard` refuses a phase prompt
 that names a gate. A merge-queue red sends its lot back to `ship`; it
 never widens the next lots' gates — a lesson that would goes to
 `/reflect` on the brief.
@@ -54,14 +40,14 @@ and `description` = its purpose, never a file:
 
 | Role | `subagent_type` | Model · effort | Spawned by | Budget (min) |
 |---|---|---|---|---|
-| builder (`contract`, `build <k>`, `ship`) | `loop-builder` | opus 5.5 · medium | you, once per phase | 40 |
-| contract reviewer | `loop-contract-reviewer` | opus 5.5 · medium | you, ONCE per issue | — |
-| shipper (`pack`, `deliver`, `publish`) | `loop-shipper` | sonnet 5.5 · medium | you, once per phase | 60 |
-| code reviewer | `loop-reviewer` | opus 5.5 · medium | you, once per round | 15 |
-| mechanic (tests of the closed list, codegen, brakes, the queue head's merge) | `loop-mechanic` | sonnet 5.5 · medium | you, after a `build <k>` that lists tasks, on a brake, at the queue head | 15 |
-| QA executor (Breakers only) | `loop-qa` | opus 5.5 · medium | you, on `QA-READY` | 15 × lots ÷ N |
+| builder (`contract`, `build <k>`, `ship`) | `skillhead:loop-builder` | opus 5.5 · medium | you, once per phase | 40 |
+| contract reviewer | `skillhead:loop-contract-reviewer` | opus 5.5 · medium | you, ONCE per issue | — |
+| shipper (`pack`, `deliver`, `publish`) | `skillhead:loop-shipper` | sonnet 5.5 · medium | you, once per phase | 60 |
+| code reviewer | `skillhead:loop-reviewer` | opus 5.5 · medium | you, once per round | 15 |
+| mechanic (tests of the closed list, codegen, brakes, the queue head's merge) | `skillhead:loop-mechanic` | sonnet 5.5 · medium | you, after a `build <k>` that lists tasks, on a brake, at the queue head | 15 |
+| QA executor (Breakers only) | `skillhead:loop-qa` | opus 5.5 · medium | you, on `QA-READY` | 15 × lots ÷ N |
 
-Budget = spawn → notification; `hooks/state.py tick` reads this column.
+Budget = spawn → notification; `skillhead state tick` reads this column.
 
 Builder phases: `contract`, one `build <k>` per slice, `ship`.
 Shipper phases: `pack`, `deliver`, `publish`. The contract reviewer reviews it ONCE: the substance is decided there and costs no rework. Every phase is a
@@ -97,11 +83,11 @@ previous run's Step 0 — repo docs/config only (CLAUDE.md, `package.json` scrip
   origin/<default> -- CLAUDE.md CODING_STANDARDS.md docs/agents` fails
   → stop before any spawn and ask the user to start the loop from a
   checkout of the default branch (a stale one cost ~45k tokens per turn
-  of every agent, 06-08/10/2026). Then `hooks/state.py model
+  of every agent, 06-08/10/2026). Then `skillhead state model
   <state.md> <the exact model ID of your system prompt>`: exit 2 →
   it wrote `stopped: model — …` in `state.md`; stop before any
   selection, one line `🐢 <its stderr>`; exit 1 (no pin) → the same
-  line, stop. Then `hooks/state.py
+  line, stop. Then `skillhead state
   fresh`: exit 2 → re-read the skill files its stderr names before
   selecting; exit 0 → read nothing again.
 - **Verification trio** — check + test + build commands and pinned
@@ -130,7 +116,7 @@ previous run's Step 0 — repo docs/config only (CLAUDE.md, `package.json` scrip
   until the closing merges: its warm target makes each merge's check
   incremental.
 - **Project profile** — `<main-repo>/.claude/loop-issues.json`
-  (examples: `~/.claude/skills/loop-issues/profiles/`): the hooks read
+  (examples: `${CLAUDE_PLUGIN_ROOT}/skills/loop-issues/profiles/`): the hooks read
   from it the test and gate commands of this stack, the frontend and
   generated-path patterns. None → the hooks' generic defaults. Its
   `toolchain_notes` names a markdown file of the repo (none → skip)
@@ -165,7 +151,7 @@ previous run's Step 0 — repo docs/config only (CLAUDE.md, `package.json` scrip
 - **Lint scope** — whether the repo's comply gate judges whole
   files or only added lines (`whole-file` | `added-lines`).
 - **Template sections** — the five mandatory sections of
-  `~/.claude/skills/issue/SKILL.md` § Body template (`Category`,
+  `${CLAUDE_PLUGIN_ROOT}/skills/issue/SKILL.md` § Body template (`Category`,
   `Summary`, `Current behavior`, `Desired behavior`, `Acceptance
   criteria`), named in the project's language as /issue writes them
   (read off one recent issue body); English by default.
@@ -180,7 +166,7 @@ previous run's Step 0 — repo docs/config only (CLAUDE.md, `package.json` scrip
   (IdP, CORS preflight from a slot's console origin);
   `<main-repo>/.claude/skills/verify/` is authoritative when present. One stack per slot — its own ports
   and database — so two QAs never queue on each other. The values
-  `hooks/slot.py` takes, each read off the launch pack: the disk
+  `skillhead slot` takes, each read off the launch pack: the disk
   threshold in GB (none named → 20, the one place this default
   lives), the test clone sweep command (none → `-`), the slot's env
   block (`KEY=value` lines, slot substituted), the schema-mismatch
@@ -189,20 +175,20 @@ previous run's Step 0 — repo docs/config only (CLAUDE.md, `package.json` scrip
   dependency probes as `<dependency>=<command>` (IdP, CORS, port,
   seed). A value the launch pack lacks is a launch pack line to add
   in the next lot (§ Rules); meanwhile its step runs without it.
-- **Slot env hook** — `hooks/slot.py env` is registered as a
-  PreToolUse Bash hook in `~/.claude/settings.json`: a command that
+- **Slot env hook** — the plugin's `hooks/hooks.json` registers
+  `skillhead slot env` as a PreToolUse Bash hook: a command that
   names `…-worktrees/slot-<s>` (or `loop-<date>`), or runs from it, gets
   `<worktrees dir>/slot-<s>.env` (`loop-<date>.env`) sourced first (path written
   literally, `~/` or `$HOME/` admitted). The hook makes no permission
   decision: the rewritten command meets the session's own policy. No
   agent re-sources the slot's env; a slot command no path ties to its
-  worktree is written `cd <worktree> && …`. `grep -q 'slot.py env'
-  ~/.claude/settings.json` fails → stop before any spawn, one line
-  `🐢 slot env hook not registered in ~/.claude/settings.json`.
+  worktree is written `cd <worktree> && …`. `command -v skillhead`
+  fails (the plugin is not enabled) → stop before any spawn, one line
+  `🐢 skillhead plugin not enabled`.
 - `git fetch origin <default>`; arm the watchdog (`RENDEZVOUS.md`)
-  and run `python3 ~/.claude/skills/loop-issues/hooks/loop_running.py start`:
+  and run `skillhead loop_running start`:
   from then on AskUserQuestion is refused in this session (nobody
-  answers an autonomous loop) until `loop_running.py stop`.
+  answers an autonomous loop) until `skillhead loop_running stop`.
   A `state.md` with lots in flight → resume them at their phase
   before selecting anything, its `mode:`, `planned:` and `done:`
   kept, its `stopped:` line dropped; none, or no lot in flight → a
@@ -211,7 +197,7 @@ previous run's Step 0 — repo docs/config only (CLAUDE.md, `package.json` scrip
 
 ## The loop
 
-**Before every spawn**, run `python3 ~/.claude/skills/loop-issues/hooks/state.py
+**Before every spawn**, run `skillhead state
 tick <state.md>`: it marks 🐢 every phase over its budget, then
 reads the mode. Exit 2 `paused until <time>` → no spawn at all;
 `draining` → phases of lots in flight only, no new lot; `drained` →
@@ -222,7 +208,7 @@ pause ends by itself: past its time, the next tick passes and the
 lots resume at their phase.
 
 **Before every spawn** that opens a new lot (the `contract` phase of
-a selected issue), also run `python3 ~/.claude/skills/loop-issues/hooks/slot.py
+a selected issue), also run `skillhead slot
 disk <threshold> <worktrees dir> <sweep command|-> <n of
 every lot in state.md>…`. It sweeps the test clones, then removes
 the `issue-<n>` worktrees idle 20 h (never a lot in flight, never one
@@ -231,12 +217,12 @@ still under the threshold. Exit 2 → no spawn, `held: contract #<n> —
 <its stderr>` in `state.md`. A held spawn is retried first, before
 any other, at the notification of the next lot that finishes (step
 6). Exit 2 with no lot in flight → the loop stops: `stopped: disk —
-<stderr>` in `state.md`, `loop_running.py stop`, CronDelete the
+<stderr>` in `state.md`, `skillhead loop_running stop`, CronDelete the
 watchdog, one line `🐢 disk — <stderr> — free disk space, then
 /loop-issues`. Phases of lots already in flight are never held.
 
 1. **Select** — first replay Step 0's fresh-instructions test and
-   `state.py fresh` (not `model`: the session's model is set); behind
+   `skillhead state fresh` (not `model`: the session's model is set); behind
    on a clean checkout → `git pull --ff-only`. An issue named in the invocation arguments is
    selected as is, whatever its labels, and the loop stops after its
    summary line. Else a split issue with unchecked tasks → next task,
@@ -244,10 +230,10 @@ watchdog, one line `🐢 disk — <stderr> — free disk space, then
    `ci/release` e2e is red → its
    repair comes first: the open issue that names the failing job,
    else write its draft (job, first error lines) at
-   `~/.claude/skills/issue/SKILL.md` § Body template, spawn ONE
-   `issue-publisher` with the draft path, the label `needs-triage`
+   `${CLAUDE_PLUGIN_ROOT}/skills/issue/SKILL.md` § Body template, spawn ONE
+   `skillhead:issue-publisher` with the draft path, the label `needs-triage`
    (never `ready-for-agent`), the Step 0 forge facts and
-   `~/.claude/skills/issue/RECON.md` (§ Forge commands) → `CREATED
+   `${CLAUDE_PLUGIN_ROOT}/skills/issue/RECON.md` (§ Forge commands) → `CREATED
    <url>`, and select it; you never call the forge to create it. Else the
    next open issue of the run's scope, the `queue:` line of `state.md`,
    written at Step 0: the issues or the label (a lot, a `theme::`) the
@@ -260,14 +246,14 @@ watchdog, one line `🐢 disk — <stderr> — free disk space, then
    candidates with an MR from an `agent/issue-<n>` branch open or merged
    into `<integration>`, or on the skip list. Each queue candidate then runs, with
    `LOOP_INTEGRATED` = the issue numbers of the `integrated:` lines,
-   `python3 ~/.claude/skills/loop-issues/hooks/check.py issue <gh|glab>
+   `skillhead check issue <gh|glab>
    <project> <n> <Template sections…>`; exit 2 → `#<n> — <its
    stderr>` (`blocked by #N`, `outside template`) in the skip list of
    `state.md`, next candidate; exit 1 (forge unreadable) → stop the
    selection and report its stderr, nobody skipped. These lines are rewritten at every
    selection, except a step-3 `blocked by #<m>` line: it survives and
    skips its issue in both modes while #m is open (#m's state read as
-   `check.py issue` reads a blocker). A closed or `integrated:` blocker frees its issue. None, no lot in a
+   `skillhead check issue` reads a blocker). A closed or `integrated:` blocker frees its issue. None, no lot in a
    slot or `held:`, and `integrated:` lines → the closing (§ Closing);
    else end your turn, the watchdog re-polls.
 
@@ -282,7 +268,7 @@ watchdog, one line `🐢 disk — <stderr> — free disk space, then
    facts (generated clients included), report dir, the brief's path,
    and the files of the previous phases. End your turn after each
    spawn.
-   - `loop-builder` `contract` → `CONTRACTED <contract.md>` (or
+   - `skillhead:loop-builder` `contract` → `CONTRACTED <contract.md>` (or
      `NEEDS-CLARIFICATION <path>`; on an open dependency without MR
      → select that dependency next; on an undeclared dependency with
      an open MR (`Stack`) → draft mode stacks on it, autonomous puts the lot
@@ -300,10 +286,10 @@ watchdog, one line `🐢 disk — <stderr> — free disk space, then
      ```
      → `CONTRACTED`. Then check `Shapes`, a closed `Tests` list,
      `Slices`, and run, in `<main-repo>`, `LOOP_BASE=origin/<integration>
-     python3 ~/.claude/skills/loop-issues/hooks/check.py contract <contract.md>`
+     skillhead check contract <contract.md>`
      before either path below: exit 2 → `contract` once more, handed
      its stderr; a second exit 2 → step 5. No
-     contract review, no `build 1` until it passes. Then `check.py
+     contract review, no `build 1` until it passes. Then `skillhead check
      overlap <contract.md> <contract.md of every other lot in a slot>`
      (`LOOP_GENERATED` = an ERE of Step 0's generated paths): exit 2
      NEVER holds a lot — `build 1` starts anyway, its prompt naming
@@ -318,12 +304,12 @@ watchdog, one line `🐢 disk — <stderr> — free disk space, then
      dependency in `Shapes`, or a lot touching only tests, → `build 1`, no contract review: small
      issues ship in 30-60 min that way, where a contract review
      costs ~25 min for findings the code review catches as well. Else spawn ONE
-     `loop-contract-reviewer` with the contract path, its findings
+     `skillhead:loop-contract-reviewer` with the contract path, its findings
      path, `CONTRACT-REVIEW.md`, `<main-repo>`.
    - contract reviewer, **one round, never two** → `CONTRACT-OK` →
      `build 1`, handed the review path (its `minor` lines amend the
      contract); `CONTRACT-REWORK <path>` → `contract` once more with
-     that path (amends, answers each finding) → `check.py contract`
+     that path (amends, answers each finding) → `skillhead check contract`
      and `overlap` again, as above → `build 1` whatever else that
      amendment says. The shipper copies the open findings into
      `pack-1.md` and the code review judges them on the diff.
@@ -334,26 +320,26 @@ watchdog, one line `🐢 disk — <stderr> — free disk space, then
      review passed `MERGEABLE` first try, and review 3 prescribed a
      migration order that was plainly wrong. A contract finding is
      cheap to carry into the code review; a round is not.
-   - `loop-builder` `build <k>` → `SLICED <k> <note>`. A `## Mechanic`
-     section in the note → spawn ONE `loop-mechanic` with it
+   - `skillhead:loop-builder` `build <k>` → `SLICED <k> <note>`. A `## Mechanic`
+     section in the note → spawn ONE `skillhead:loop-mechanic` with it
      verbatim → `DONE <path>`. Then `build <k+1>` while slices
-     remain, else `loop-shipper` `pack`.
-   - `loop-shipper` `pack <r>` → `BLOCKED` on the test guard →
+     remain, else `skillhead:loop-shipper` `pack`.
+   - `skillhead:loop-shipper` `pack <r>` → `BLOCKED` on the test guard →
      `ship <r>` with that report, then `pack` again; a second →
      step 4 as flagged draft, never merged, even in automerge.
-   - `loop-shipper` `pack <r>` → `PACKED <pack-<r>.md>`. Spawn ONE
-     `loop-reviewer` with `r`, the pack path, its findings path
+   - `skillhead:loop-shipper` `pack <r>` → `PACKED <pack-<r>.md>`. Spawn ONE
+     `skillhead:loop-reviewer` with `r`, the pack path, its findings path
      `review-<r>.md`, `REVIEW.md` path, `<main-repo>`.
-   - reviewer → `MERGEABLE`/`REWORK <path>`. Spawn `loop-builder`
+   - reviewer → `MERGEABLE`/`REWORK <path>`. Spawn `skillhead:loop-builder`
      `ship <r>` with the findings path and the verdict.
-   - `loop-builder` `ship <r>` → `SHIPPED <ship-<r>.md>`. `MERGEABLE`,
-     `r = 3` or a `ship` that committed no code → `loop-shipper`
+   - `skillhead:loop-builder` `ship <r>` → `SHIPPED <ship-<r>.md>`. `MERGEABLE`,
+     `r = 3` or a `ship` that committed no code → `skillhead:loop-shipper`
      `deliver` with it (open findings ship flagged `[review not
      converged]`); else `pack <r+1>`.
-   - `loop-shipper` `deliver` → `DELIVERED <report>` → step 4 in the
+   - `skillhead:loop-shipper` `deliver` → `DELIVERED <report>` → step 4 in the
      SAME turn, no spawn in between and no turn ended on it. Its
      Breaker map waits in `ship-<r>.md` for the closing (§ Closing).
-     `BLOCKED <deliver.md>` (comply residue) → spawn `loop-builder`
+     `BLOCKED <deliver.md>` (comply residue) → spawn `skillhead:loop-builder`
      `ship` once more with deliver.md, then `deliver` again; a second
      `BLOCKED` → step 4 as flagged draft. `FAILED <path>` → step 5.
 
@@ -389,7 +375,7 @@ watchdog, one line `🐢 disk — <stderr> — free disk space, then
    behind the issue — everything it created, nothing else.
    ```bash
    # QA stack first: a live session would refuse the drops below.
-   python3 ~/.claude/skills/loop-issues/hooks/slot.py qa-down <report-dir>/qa-stack.md
+   skillhead slot qa-down <report-dir>/qa-stack.md
    wt=$(git -C ../<repo>-worktrees/slot-<s> rev-parse --show-toplevel)
    # The slot's worktree stays; only the lot leaves it.
    git -C "$wt" reset -q --hard && git -C "$wt" clean -fdq && git -C "$wt" switch -q --detach
@@ -410,7 +396,7 @@ watchdog, one line `🐢 disk — <stderr> — free disk space, then
    drop is a plain `DROP DATABASE`, never `WITH (FORCE)`: a refusal
    means another session still uses that database — leave it, one
    `🐢` line naming it. A database the issue did not create stays the
-   user's, a worktree too outside `slot.py disk`'s prune. Close with
+   user's, a worktree too outside `skillhead slot disk`'s prune. Close with
    `git worktree list` and the `pg_database` listing showing nothing
    of issue `<n>` left; what remains is named in the summary line.
 
@@ -420,10 +406,10 @@ watchdog, one line `🐢 disk — <stderr> — free disk space, then
    inside it. It leaves its slot for a `queued: #<n> !<mr> <sha> —
    <report dir>` line, and the slot selects the next issue: the merge
    runs in the integration worktree, never the slot's. The head is
-   ONE `loop-mechanic`, in `<worktrees dir>/loop-<date>` (created on
+   ONE `skillhead:loop-mechanic`, in `<worktrees dir>/loop-<date>` (created on
    first use, detached), with this closed task:
    1. The launch pack's merge command on the MR, foreground,
-      `tail -40`, through `slot.py gate` when the launch pack names a
+      `tail -40`, through `skillhead slot gate` when the launch pack names a
       schema signal: it merges `origin/<integration>` into the head,
       judges it, merges the MR pinned on that sha → `DONE <merged sha>`.
    2. A conflict where both sides only add lines (lists, tests,
@@ -435,24 +421,24 @@ watchdog, one line `🐢 disk — <stderr> — free disk space, then
    the output. The next head's task is in flight before the relay
    line.
 
-   **Registry and audit.** On `DONE`, run `python3 ~/.claude/skills/loop-issues/hooks/state.py merged
+   **Registry and audit.** On `DONE`, run `skillhead state merged
    <report-root>/findings.md <n> <report-dir>`: each line of the lot's
    `## Unpaid findings` becomes `- [ ] #<n> <path:line> — <finding>
    — <reason>`, once, then `merged #<n>`. The registry sits beside
    `state.md`; `merged` only appends, the audit only ticks boxes and
    appends `audited`, which resets the merge count to zero.
-   `audit due` → ONE `loop-mechanic`: the audit of the `[ ]` entries
+   `audit due` → ONE `skillhead:loop-mechanic`: the audit of the `[ ]` entries
    only (the full suite runs at the closing). An entry whose finding is
    gone from `origin/<integration>` (judged on its content, the line
    drifts) → `[x] … — absent @<sha>`, never filed. An entry whose
    `<path:line> — <finding>` matches one already closed `— #<m>` →
    `[x] … — already #<m>`, never filed. The rest, grouped by related
    findings, become drafts per § Body template of
-   `~/.claude/skills/issue/SKILL.md` in
+   `${CLAUDE_PLUGIN_ROOT}/skills/issue/SKILL.md` in
    `<report-root>/audit-<UTC date>/`; the mechanic ends `DONE
    <report-root>/audit-<UTC date>/`. Then you append `audited` to the
-   registry and, per draft, spawn the `issue-publisher`
-   (`~/.claude/skills/issue/SKILL.md` step 4) with the label
+   registry and, per draft, spawn the `skillhead:issue-publisher`
+   (`${CLAUDE_PLUGIN_ROOT}/skills/issue/SKILL.md` step 4) with the label
    `needs-triage`, never `ready-for-agent`. Only its `CREATED` (the
    forge returned the issue) marks the draft's entries
    `[x] … — #<m>`; a failed creation leaves them `[ ]` for the next
@@ -479,7 +465,7 @@ watchdog, one line `🐢 disk — <stderr> — free disk space, then
    `state.md`, suffixed ` rework` when a review of it returned
    `REWORK`; an issue added to the run raises the `(+k)` of
    `planned:`. Each summary line ends with the output of
-   `hooks/state.py count <state.md>` (counter and rework rate), then
+   `skillhead state count <state.md>` (counter and rework rate), then
    the lines of the lot's `slowness.md`; every reply ends with that
    counter. Nothing else
    reaches the chat but 🐢 and a question: the rest goes to `<report-root>/to-know-<loop>.md`.
@@ -499,7 +485,7 @@ closing holds slot 1 as lot `#closing` (`slot 1: #closing <phase>
 <agent> since <time> — <report-root>/closing`), so `tick` reads
 `draining` and lets its phases and its fix lots run:
 
-1. ONE `loop-shipper` `close` (SHIPPER.md) on
+1. ONE `skillhead:loop-shipper` `close` (SHIPPER.md) on
    `<worktrees dir>/loop-<date>`, handed the `integrated:` lines and
    the slot count N (the `slot k:` lines of `state.md`) →
    `QA-READY <qa-handoff.md>` (`ci/check` then the touched e2e specs
@@ -507,8 +493,8 @@ closing holds slot 1 as lot `#closing` (`slot 1: #closing <phase>
    (no Breaker map: straight to 4) or `BLOCKED <close.md>` (each red with
    the lot whose merge first reddens it; a conflict with `<default>`
    → lot `#closing`, branch `agent/closing`, at step 3).
-2. `QA-READY` → ONE `loop-qa` with the handoff → verdict path →
-   `loop-shipper` `publish` with it.
+2. `QA-READY` → ONE `skillhead:loop-qa` with the handoff → verdict path →
+   `skillhead:loop-shipper` `publish` with it.
 3. Reds or a NO-GO → fix lots IN PARALLEL, one per group of specs
    (a Rust red: per crate; a NO-GO: per lot section), `#closing-fix-<k>`,
    each at `ship` in a free slot (as many as free slots, the rest
@@ -523,7 +509,7 @@ closing holds slot 1 as lot `#closing` (`slot 1: #closing <phase>
    passes: the closing runs until GO (user, 2026-10-21).
 4. `publish` → `DELIVERED` with the MR `<integration>` → `<default>`
    (a NO-GO → `BLOCKED`, step 3).
-   Autonomous → ONE `loop-mechanic`: `merge_gate.py <closing
+   Autonomous → ONE `skillhead:loop-mechanic`: `skillhead merge_gate <closing
    report-dir> origin/<default> <head sha> <Frontend app dirs>`,
    then the certifying status green on that sha (`close` ran the
    script), then merge PINNED → issues closed by the forge; confirm
@@ -536,14 +522,14 @@ closing holds slot 1 as lot `#closing` (`slot 1: #closing <phase>
 ## Slowness is yours
 
 Every stall of the loop is your defect to remove, never a fact to
-report and wait out. A phase over its budget (§ Agents; `state.py
+report and wait out. A phase over its budget (§ Agents; `skillhead state
 tick` marks it 🐢 in `state.md` and the lot's `slowness.md`), a
 report naming an obstacle outside the diff (stuck process, taken
 port, stale or locked database, cold or purged target, missing env
 var, workaround flag, tool missing from PATH, red inherited from
 `<default>`), or the same cause in two reports of any issue → it is
 a **brake**: before the next phase spawn, remove it — a
-`loop-mechanic` with the exact command (kill, free the port, migrate
+`skillhead:loop-mechanic` with the exact command (kill, free the port, migrate
 the slot's database, restore the env, drop the flag) when it is
 environmental, an issue selected at slot 0 like a red `<default>`
 when it is code — and write `freins.md`: cause, action,
@@ -573,7 +559,7 @@ in a relay line. Every brake handled is one line `🔧 <cause> →
 - When parallel was asked: each issue holds its slot, only on
   disjoint files, and every phase runs in parallel across slots,
   browser QA and `publish` captures included: each slot has its own
-  console port (the launch pack's per-slot port) and each `loop-qa`
+  console port (the launch pack's per-slot port) and each `skillhead:loop-qa`
   opens its own `new_page` with an `isolatedContext` named after its
   slot, passing that `pageId` to every chrome-devtools call — never
   `select_page`, never a page it did not open. Never queue a QA
@@ -638,10 +624,10 @@ in a relay line. Every brake handled is one line `🔧 <cause> →
   lots in flight » → `drain`; « pause until <time> » → `pause-until
   <time as UTC ISO-8601, date -u +%FT%TZ>`; « resume » → `run` (the
   same words in any language).
-  `state.py tick` alone reads it.
+  `skillhead state tick` alone reads it.
 - Only user interruption ends the loop, the summary line of an
   issue named in the invocation, or the disk, model and drained
   stops (§ The loop, Step 0); every way run
-  `python3 ~/.claude/skills/loop-issues/hooks/loop_running.py stop` first. The
+  `skillhead loop_running stop` first. The
   acknowledging reply ends with `💡 /reflect — mine this run for
   skill deltas`.

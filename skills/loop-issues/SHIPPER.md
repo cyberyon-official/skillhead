@@ -138,7 +138,7 @@ and the `integrated:` lines (issue, MR, report dir of each lot).
    a red. Foreground, one command per gate, `tail -40`; a gate that
    exits 0 on zero tests run is red. With a schema signal in the
    launch pack, each gate runs as
-   `python3 ~/.claude/skills/loop-issues/hooks/slot.py gate '<signal>'
+   `skillhead slot gate '<signal>'
    '<recreate>' '<gate>'`: one recreation and one rerun on that
    signal, exit 2 → `BLOCKED: schema mismatch after recreate`. A red reproduced on
    `origin/<default>` (detached worktree, same command) is inherited:
@@ -168,7 +168,7 @@ and the `integrated:` lines (issue, MR, report dir of each lot).
 4. **QA.** The plan = the Breaker maps of every lot's last `ship-<r>.md`
    (`QA: not run` lots add nothing), front lots first, one section per
    lot naming its issue. No map at all → skip to the report. Else,
-   with `slot() { python3 ~/.claude/skills/loop-issues/hooks/slot.py "$@"; }`, each from
+   with `slot() { skillhead slot "$@"; }`, each from
    `cd <worktree> && …`: `slot qa-down <report-dir>/qa-stack.md`
    (your own previous stack), then `slot qa-up
    <report-dir>/qa-stack.md <log> '<launch command>' <ports>…` per
@@ -187,8 +187,8 @@ and the `integrated:` lines (issue, MR, report dir of each lot).
    the first failing one: a brake removed now (relaunch, reseed) or
    `slot qa-down` then a `BLOCKED` naming it — never handed to QA to
    come back `ABORTED`. Then write
-   `<report-dir>/qa-handoff.md` for the `loop-qa` the orchestrator
-   spawns (it reads `~/.claude/skills/qa/SKILL.md`): mode
+   `<report-dir>/qa-handoff.md` for the `skillhead:loop-qa` the orchestrator
+   spawns (it reads `${CLAUDE_PLUGIN_ROOT}/skills/qa/SKILL.md`): mode
    `breakers-only`, the maps, URL/port, host allowlist (the login
    console included), N, the N organizations and their credentials,
    the budget in minutes, ~15 per lot ÷ N, run dir outside the worktree, verdict path `qa/verdict-<k>.md`. Write
@@ -200,11 +200,11 @@ and the `integrated:` lines (issue, MR, report dir of each lot).
 ## Phase `publish` — the closing, after the QA verdict handed in your prompt
 
 The stack is the one of `qa-stack.md`: one `curl` probe proves it;
-dead → `slot.py qa-down` then `qa-up` again from the launch pack,
+dead → `skillhead slot qa-down` then `qa-up` again from the launch pack,
 never assume. `qa-down` runs on every exit of this phase, ABORTED
 verdict included.
 
-5. NO-GO → `slot.py qa-down <report-dir>/qa-stack.md`, write `<report-dir>/deliver.md`
+5. NO-GO → `skillhead slot qa-down <report-dir>/qa-stack.md`, write `<report-dir>/deliver.md`
    with the verdict path and, per `in-lot` finding, the lot its map
    section names, end `BLOCKED <deliver.md>`: those lots' `ship`
    answers it (SKILL.md § Closing). `GO-PROVISIONAL` is a GO: its
@@ -216,7 +216,7 @@ verdict included.
    credential typed into the login form is the procedure, not a
    leak; skipping the captures for it is not. Upload per
    `PRESENTATION.md`, embed the returned markdown at the placement ship.md marks.
-   THEN `slot.py qa-down <report-dir>/qa-stack.md`: exit 2 names a
+   THEN `skillhead slot qa-down <report-dir>/qa-stack.md`: exit 2 names a
    port still held, written in `deliver.md`.
 7. Open the MR `<integration>` → `<default>` (push nothing: its head
    is the sha `close` certified), title `loop <date>: <k> lots`, body

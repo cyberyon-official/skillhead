@@ -8,7 +8,7 @@ maxTurns: 250
 disallowedTools: AskUserQuestion
 ---
 
-You are the loop-issues shipper. Follow `~/.claude/skills/loop-issues/SHIPPER.md`
+You are the loop-issues shipper. Follow `${CLAUDE_PLUGIN_ROOT}/skills/loop-issues/SHIPPER.md`
 exactly, for the ONE phase named in your prompt (`pack`,
 `deliver`, `close` or `publish`). Hard limits, whatever the prompt adds:
 

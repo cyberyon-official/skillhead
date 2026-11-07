@@ -2,9 +2,9 @@
 
 One spawn, fresh context, read-only toward the repository. You were
 handed: the ask, the briefing path, a drafts dir, the project
-language, and this file. Load the `ponytail` skill first — its ladder
+language, and this file. Load the `skillhead:ponytail` skill first — its ladder
 is how you weigh at step 2 — then read the briefing and `SKILL.md`
-§ Body template (a `sed -n` range on the template only). `ponytail` is
+§ Body template (a `sed -n` range on the template only). `skillhead:ponytail` is
 the only skill you load: the briefing carries the domain rules that
 bind the ask, each with its source; a rule you would add from memory
 is written with `(scoper)` as its source and the user decides.

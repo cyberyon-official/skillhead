@@ -1,11 +1,11 @@
 # Builder brief — loop-issues
 
 You run ONE phase per spawn, named in your prompt: `contract`,
-`build <k>` or `ship <r>` (agent `loop-builder`); the mechanical
-`pack` and `deliver` phases belong to `loop-shipper` (`SHIPPER.md`). Each phase starts in a fresh context
+`build <k>` or `ship <r>` (agent `skillhead:loop-builder`); the mechanical
+`pack` and `deliver` phases belong to `skillhead:loop-shipper` (`SHIPPER.md`). Each phase starts in a fresh context
 from the files of the report dir. You spawn nothing: mechanical
 work you cannot do in the phase is a task line under `## Mechanic`
-of your note, which the orchestrator hands to a `loop-mechanic`
+of your note, which the orchestrator hands to a `skillhead:loop-mechanic`
 after you. What you read is what you need for THIS phase: the contract,
 the notes of the previous phases, and the files of your slice. Read
 `RENDEZVOUS.md` § Report before writing.
@@ -29,7 +29,7 @@ Read the issue, then `CLAUDE.md`/`AGENTS.md`, `CONTEXT.md`,
 `docs/adr/`, and every guide their pointers name for the areas the
 issue touches (`CODING_STANDARDS.md` → per-area guides when present):
 guides are disclosed by pointer, never preloaded. Read code with `git grep` and `sed -n` ranges.
-Load `quality-bar` and `ponytail`.
+Load `skillhead:quality-bar` and `skillhead:ponytail`.
 Write `<report-dir>/contract.md`:
 
 - `Need` — one line per acceptance criterion, `- N<k> — <what a
@@ -76,7 +76,7 @@ Write `<report-dir>/contract.md`:
   breaks> — arrange / act / assert in one sentence — doubles:
   <existing double or none> — (N<k>, …)`; a user-visible `Need` has its e2e line per
   `docs/tests-e2e.md` (`— broken gesture: <line> —`; a missing `e2e/src/vendor-sink.mjs` route is the lot's). Nobody adds a test outside
-  this list. `hooks/check.py contract` refuses a `Need` line without
+  this list. `skillhead check contract` refuses a `Need` line without
   its `N<k>` id, a `N<k>` no `Tests` bullet names, a `Shapes` without
   its `- Files:` line, a `changed` line without a filled `read by:`
   and a front lot's `N<k>` without its `e2e/` line.
@@ -91,7 +91,7 @@ Write `<report-dir>/contract.md`:
   the spec the e2e doc names for each screen in `Shapes` (a changed
   helper reaches every spec calling it). One line per spec, `- <path>
   — changed | intact — <why>`; a `changed` spec is in `Changed
-  tests`; no e2e surface → `- none — <why>`. `check.py contract`
+  tests`; no e2e surface → `- none — <why>`. `skillhead check contract`
   refuses it empty, a path absent from the base, a `changed` outside
   `Changed tests`.
 - `Slices` — the ordered build slices, each one fresh context:
@@ -147,7 +147,7 @@ an `## Deviations from plan` line, never an edit of `contract.md`.
   slices read `<report-dir>/slice-<k-1>.md` first. Edit ONLY
   worktree paths. A `contract-review-<c>.md` in your prompt: its
   `minor` lines amend the contract as you read it, no rewrite.
-- Load `quality-bar`, `ponytail`, the language skill
+- Load `skillhead:quality-bar`, `skillhead:ponytail`, the language skill
   of the slice's files and every skill or doc the repo's CLAUDE.md
   routes the slice's area to; nothing else by default. Another installed
   domain skill (picked by its description) is loaded only when the
@@ -228,7 +228,7 @@ comment, never by chopping its sentences — `FP` groups, only on
 lines the lot added (any other is `fix`, generated paths
 excepted), are listed for the
 shipper with the reason each. Before the commit,
-`quality-bar-review` on the fix diff alone, each finding paid
+`skillhead:quality-bar-review` on the fix diff alone, each finding paid
 in that commit: a fix that breeds the next finding costs a round. Any existing test you edit (a review fix
 included) gets its `Changed tests` line in the same commit, with the
 issue line or review finding that changes the behaviour it pins; no

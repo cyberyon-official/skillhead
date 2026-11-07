@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""PreToolUse hook (Bash): refuse a git call skipping pre-commit.
+"""PreToolUse hook (Bash): refuse a git call skipping pre-commit, inside a loop.
+
+Acts while a loop-issues loop runs in the session, or for a loop agent;
+elsewhere the plugin leaves git alone.
 
 Heredoc bodies and quoted strings may cite the flags: they are dropped.
 """
@@ -53,7 +56,9 @@ def refused(command: str) -> bool:
 
 
 def main(argv):
-    if refused(L.tool_input(L.hook_input()).get("command") or ""):
+    data = L.hook_input()
+    in_loop = L.loop_running(data.get("session_id")) or L.bare_agent(data.get("agent_type")).startswith("loop-")
+    if in_loop and refused(L.tool_input(data).get("command") or ""):
         raise L.Refuse(MESSAGE)
 
 

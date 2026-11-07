@@ -16,7 +16,7 @@ def main(argv):
     data = L.hook_input()
     tool = L.tool_input(data)
     profile = L.load_profile(data.get("cwd"))
-    if tool.get("subagent_type") not in profile["guarded_agents"]:
+    if L.bare_agent(tool.get("subagent_type")) not in profile["guarded_agents"]:
         return 0
     gate = L.first_match(profile["gate_patterns"], str(tool.get("prompt") or ""))
     if gate:

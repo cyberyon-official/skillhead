@@ -9,7 +9,7 @@ disallowedTools: AskUserQuestion
 ---
 
 You are the loop-issues contract reviewer. Follow
-`~/.claude/skills/loop-issues/CONTRACT-REVIEW.md` exactly. Hard limits, whatever the prompt
+`${CLAUDE_PLUGIN_ROOT}/skills/loop-issues/CONTRACT-REVIEW.md` exactly. Hard limits, whatever the prompt
 adds:
 
 - Read-only toward the repository: `git grep`, `git show`, `sed -n`

@@ -21,6 +21,7 @@ sys.dont_write_bytecode = True  # a __pycache__ in the skill would trip `state f
 
 HOOKS_DIR = Path(__file__).resolve().parent
 SKILL_DIR = HOOKS_DIR.parent
+PLUGIN_ROOT = SKILL_DIR.parent.parent  # skills/loop-issues/hooks → plugin root
 PROFILE_NAME = "loop-issues.json"  # read from <repo>/.claude/
 
 
@@ -100,6 +101,16 @@ def claude_home() -> Path:
 
 def run_dir() -> Path:
     return claude_home() / "run" / "loop-issues"
+
+
+def bare_agent(name) -> str:
+    """`skillhead:loop-builder` → `loop-builder`: plugin agents carry the plugin's prefix."""
+    return str(name or "").rsplit(":", 1)[-1]
+
+
+def loop_running(session) -> bool:
+    """The session marked by `loop_running.py start`."""
+    return bool(session) and (run_dir() / str(session)).is_file()
 
 
 def session_id() -> str:

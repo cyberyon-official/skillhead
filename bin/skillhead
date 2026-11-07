@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# skillhead <script> [args…] — runs one of the plugin's Python scripts with a
+# real Python ≥ 3.10, on Linux, macOS and Windows (Git Bash). The Microsoft
+# Store `python3` stub fails the probe and is skipped.
+#   skillhead state tick <state.md>      skills/loop-issues/hooks/state.py
+#   skillhead guard_issue_create …       skills/issue/hooks/guard_issue_create.py
+#   skillhead new_project <dir> …        new_project.py
+set -u
+# Hooks get CLAUDE_PLUGIN_ROOT (a native path on Windows); the Bash tool finds
+# this file on PATH, as a POSIX path.
+root="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+name="${1:?usage: skillhead <script> [args…]}"
+shift
+case "$name" in
+  guard_issue_create) script="$root/skills/issue/hooks/$name.py" ;;
+  new_project) script="$root/new_project.py" ;;
+  *) script="$root/skills/loop-issues/hooks/$name.py" ;;
+esac
+[ -f "$script" ] || { echo "skillhead: no script named $name" >&2; exit 1; }
+for py in python3 python "py -3"; do
+  if $py -c 'import sys; sys.exit(sys.version_info < (3, 10))' >/dev/null 2>&1; then
+    exec $py "$script" "$@"
+  fi
+done
+echo "skillhead: Python 3.10 or later not found (tried python3, python, py -3)" >&2
+exit 1

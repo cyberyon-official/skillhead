@@ -27,11 +27,11 @@ An issue states the NEED, never the how. Three qualities gate creation:
 ## Your role
 
 You route, validate with the user and never draft yourself. The
-scoping and the draft run in an opus subagent (`issue-scoper`); a
-opus subagent (`issue-reviewer`) judges the draft, cap 3 rounds;
-both load `ponytail` as their only skill. Forge reads and the repo
+scoping and the draft run in an opus subagent (`skillhead:issue-scoper`); a
+opus subagent (`skillhead:issue-reviewer`) judges the draft, cap 3 rounds;
+both load `skillhead:ponytail` as their only skill. Forge reads and the repo
 check run in subagents pinned `model: "opus"`, forge writes in the
-`issue-publisher` agent. You never read the repository, never load a skill
+`skillhead:issue-publisher` agent. You never read the repository, never load a skill
 and never call the forge yourself.
 
 Report routing: a subagent writes its report to a scratchpad file and
@@ -69,10 +69,10 @@ Rule on the verdicts yourself:
 - **contradiction** (feature already there, bug not reproducible, ask
   conflicts with an ADR) → stop and surface it; never write around it.
 
-### 2. Scope, draft, review — `issue-scoper` ‖ `issue-reviewer`, cap 3
+### 2. Scope, draft, review — `skillhead:issue-scoper` ‖ `skillhead:issue-reviewer`, cap 3
 
-Spawn ONE `issue-scoper` (`subagent_type: "issue-scoper"`, never with
-`model`) — it loads `ponytail` and weighs the ask on its ladder —
+Spawn ONE `skillhead:issue-scoper` (`subagent_type: "issue-scoper"`, never with
+`model`) — it loads `skillhead:ponytail` and weighs the ask on its ladder —
 handed: `$ARGUMENTS`, the briefing path, a drafts dir, the
 project language from the cache, and `SCOPER.md` (path). It ends
 `DRAFTED <dir>` (one file per draft, `split.md` when it proposes a
@@ -91,7 +91,7 @@ fix, doing nothing or a direct fix under 15 lines covers the need) or `FAILED <p
   Print `group.md` (which needs share an issue, which stay alone,
   why, the implementation cycles saved) and ask the user; a refused
   grouping → respawn with the ruling.
-- **DRAFTED** → spawn ONE `issue-reviewer` (round `c`, never with
+- **DRAFTED** → spawn ONE `skillhead:issue-reviewer` (round `c`, never with
   `model`) handed: `$ARGUMENTS`, the briefing path, the drafts dir,
   `REVIEWER.md` (path). `DRAFT-OK` → step 3. `DRAFT-REWORK <path>` →
   respawn the scoper with that path (it amends the drafts, answers

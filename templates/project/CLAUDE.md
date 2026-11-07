@@ -45,5 +45,5 @@ history (guard `rules_have_no_history`).
 loop-issues: {{MODE}}
 
 - Forge: {{FORGE}}. Default branch: `{{DEFAULT_BRANCH}}`.
-- Issues: `/issue`. Implementation: `/loop-issues`.
+- Issues: `/skillhead:issue`. Implementation: `/skillhead:loop-issues` (plugin `skillhead`).
 - Hook profile: `.claude/loop-issues.json`.

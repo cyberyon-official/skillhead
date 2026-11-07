@@ -1,0 +1,30 @@
+{
+  "name": "skillhead",
+  "displayName": "skillhead",
+  "version": "0.1.0",
+  "description": "From a loose need to a merged change: /issue writes minimal, need-only issues; /loop-issues implements them autonomously with a reviewed contract, diff review, an integration branch, QA and one MR to the default branch.",
+  "author": {
+    "name": "Guillaume Chauvet",
+    "email": "contact@cyberyon.pro",
+    "url": "https://github.com/gchauvet"
+  },
+  "homepage": "https://github.com/gchauvet/skillhead",
+  "repository": "https://github.com/gchauvet/skillhead",
+  "license": "MIT",
+  "keywords": [
+    "issues",
+    "autonomous",
+    "loop",
+    "code-review",
+    "qa",
+    "worktrees"
+  ],
+  "userConfig": {
+    "guarded_repos": {
+      "type": "string",
+      "title": "Guarded repositories",
+      "description": "Space-separated owner/repo list where only the /issue publisher may create issues. Empty: no guard.",
+      "default": ""
+    }
+  }
+}
