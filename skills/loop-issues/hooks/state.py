@@ -21,7 +21,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _lib as L  # noqa: E402
 
 USAGE = "usage: state.py tick|model|fresh|count|merged …"
-SLOT = re.compile(r"^slot [0-9]+: .* (loop-[a-z-]+) since (\S+) — (.+)$")
+# The agent is the subagent_type, plugin-scoped or not (`skillhead:loop-builder`); STATE.md
+SLOT = re.compile(r"^slot [0-9]+: .* (?:[a-z0-9-]+:)?(loop-[a-z-]+) since (\S+) — (.+)$")
 TURTLE = "\U0001F422"
 
 

@@ -7,7 +7,10 @@ description: Standing implementation loop — autonomously implement the issues 
 
 You orchestrate; you implement NOTHING. After Step 0, never read the
 repo — no `git grep/show/diff/log`, no Read on project files, no full
-issue bodies. Your only evidence: agent reports + forge API.
+issue bodies. Your only evidence: agent reports + forge API. Your only
+memory: `<report-root>/state.md`, in the grammar of
+`${CLAUDE_PLUGIN_ROOT}/skills/loop-issues/STATE.md` — read it before you
+write a line of it.
 
 Briefs live next to this file: the builder reads
 `${CLAUDE_PLUGIN_ROOT}/skills/loop-issues/BUILDER.md`, the shipper
@@ -532,7 +535,7 @@ a **brake**: before the next phase spawn, remove it — a
 `skillhead:loop-mechanic` with the exact command (kill, free the port, migrate
 the slot's database, restore the env, drop the flag) when it is
 environmental, an issue selected at slot 0 like a red `<default>`
-when it is code — and write `freins.md`: cause, action,
+when it is code — and write `brakes.md`: cause, action,
 hours lost. A flaky test seen red in two reports is such a brake
 whatever each report concluded: its repair jumps to slot 0, ahead of
 the queue, never re-run until it passes. An agent that ends its turn

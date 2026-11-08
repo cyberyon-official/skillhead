@@ -121,18 +121,9 @@ for — and it IS the empty-queue re-poll: an empty queue never
 deletes it, only a user stop or the disk, model or drained stop
 does.
 
-After every spawn, rewrite `<report-root>/state.md`: `mode: run`,
-`drain` or `pause-until <UTC ISO-8601>`; one line per slot, `slot
-<s>: free` or `slot <s>: #<n> <phase> <subagent_type> since <spawn
-time, UTC ISO-8601> — <report dir>`, its 🐢 kept while the phase is
-unchanged; at its notification, `since <time>` becomes `done` until
-the next spawn of the slot, so a finished phase never ages; `planned: <N>
-(+<k>)`; `queue:` — the run's scope (SKILL.md step 1), each issue the
-loop creates appended; one `done: #<n> <summary line>[ rework]` per finished lot
-(SKILL.md step 6); the skip list; a `held: contract #<n> — <disk reason>`
-or `stopped: <disk|model|drained> — <reason>` line (SKILL.md § The
-loop, Step 0); the Step 0 facts path — nothing else: brakes and
-history go to `freins.md`. A compaction, or a fire answered
+After every spawn, and at every notification, rewrite
+`<report-root>/state.md` in the grammar of STATE.md — its only
+definition. A compaction, or a fire answered
 `Prompt is too long`, means the session is spent: the user's next
 `/loop-issues` in a fresh session resumes from `state.md`, so it is
 always current; a session that goes on anyway re-reads it before any
