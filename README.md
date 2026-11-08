@@ -67,13 +67,23 @@ Git Bash.
 
 ## Start a project
 
-```sh
-skillhead new_project ../my-project --name "My project" --forge github --mode draft
-skillhead new_project ../existing-project   # adds the structure, never overwrites
+In Claude Code, from the project's directory:
+
+```
+/skillhead:initialize
 ```
 
-From Claude's Bash tool, `skillhead` is on the `PATH`; from a clone of this
-repository, run `python3 new_project.py` instead.
+It infers the name, forge and default branch from the repository, previews
+what it will write, never overwrites a file, fills `ci/gates.json` and the
+toolchain guide for the detected stack, runs the merge gate, and leaves the
+commit to you.
+
+Without Claude, the generator alone does the first step:
+
+```sh
+python3 new_project.py ../my-project --name "My project" --forge github --mode draft
+python3 new_project.py ../existing-project --dry-run   # lists what it would write
+```
 
 This lays down the structure the skills read — `CLAUDE.md` as a pointer
 table, coding guides, vocabulary, ADRs, review checklist, test rules,

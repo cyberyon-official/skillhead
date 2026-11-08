@@ -43,6 +43,16 @@ class Template(unittest.TestCase):
         self.assertIn("README.md", result.stdout)
         self.assertFalse((target / ".git").exists(), "no git init in an existing directory")
 
+    def test_dry_run_changes_nothing(self):
+        target = self.tmp / "dry"
+        target.mkdir()
+        (target / "README.md").write_text("# Mine\n", encoding="utf-8")
+        result = generate(target, "--dry-run")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual([p.name for p in target.iterdir()], ["README.md"], "dry run wrote files")
+        self.assertIn("+ CLAUDE.md", result.stdout)
+        self.assertIn("README.md", result.stdout.split("Already present")[1])
+
     def test_guards_catch_a_dated_rule(self):
         target = self.tmp / "dated"
         generate(target, "--no-git")
