@@ -15,6 +15,12 @@ from pathlib import Path
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _lib as L  # noqa: E402
+import _shell  # noqa: E402
+
+
+TEXT_PROGRAMS = {"echo", "printf", "cat", "grep", "egrep", "fgrep", "rg", "ag", "ack", "ls", "head", "tail",
+                 "less", "more", "wc", "git", "gh", "glab", "touch", "mkdir", "diff", "sort", "uniq", "tee", "true",
+                 "false", "test", "[", "cd", "pwd", "which", "type", "command"}
 
 
 def main(argv):
@@ -25,7 +31,12 @@ def main(argv):
     profile = L.load_profile(data.get("cwd"))
     for allowed in profile["test_allowed"]:
         command = re.sub(allowed, lambda m: m.groupdict().get("keep") or "", command)
-    if not L.first_match(profile["test_patterns"], command):
+    # Each command as the shell would run it (quotes and escapes removed,
+    # variables and aliases set in the same text expanded), nested ones
+    # included; a program that only handles text (a commit message, a grep
+    # pattern, an echo) never counts as a test run.
+    candidates = [" ".join(c.argv) for c in _shell.commands(command) if c.name not in TEXT_PROGRAMS]
+    if not any(L.first_match(profile["test_patterns"], c) for c in candidates):
         return 0
     hint = profile.get("test_allowed_hint") or ""
     raise L.Refuse(

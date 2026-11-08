@@ -223,7 +223,7 @@ DEFAULT_TEST_PATTERNS = [
     r"\b(ctest|rspec|phpunit)\b",
     r"\bmix +test\b",
     r"\bswift +test\b",
-    r"\bslot\.py +gate\b",
+    r"\b(skillhead +slot|slot\.py) +gate\b",
 ]
 
 # Commands a phase prompt must not name: the brief owns each phase's gates.
@@ -271,11 +271,22 @@ def load_profile(cwd=None) -> dict:
     return profile
 
 
-def first_match(patterns: Iterable[str], text: str) -> Optional[str]:
+INVISIBLE = re.compile("[\u00ad\u180e\u200b-\u200f\u202a-\u202e\u2060-\u2064\ufeff]")
+
+
+def plain_text(text: str) -> str:
+    """Text as a reader sees it: NFKC (fullwidth → ASCII), no invisible
+    characters, every run of Unicode whitespace as one space."""
+    import unicodedata
+    text = INVISIBLE.sub("", unicodedata.normalize("NFKC", text))
+    return re.sub(r"\s+", " ", text)
+
+
+def first_match(patterns: Iterable[str], text: str, flags: int = 0) -> Optional[str]:
     """The leftmost match of any pattern in text (grep -o | head -1)."""
     best = None
     for pattern in patterns:
-        m = re.search(pattern, text)
+        m = re.search(pattern, text, flags)
         if m and (best is None or m.start() < best.start()):
             best = m
     return best.group(0) if best else None

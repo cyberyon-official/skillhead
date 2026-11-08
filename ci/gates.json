@@ -3,7 +3,7 @@
   "steps": [
     {
       "name": "hooks",
-      "run": "{python} skills/loop-issues/hooks/test_hooks.py"
+      "run": "{python} -B -m unittest discover -s skills/loop-issues/hooks -p \"test_*.py\""
     },
     {
       "name": "template",
