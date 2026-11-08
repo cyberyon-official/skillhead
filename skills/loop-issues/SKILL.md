@@ -270,110 +270,95 @@ watchdog, one line `🐢 disk — <stderr> — free disk space, then
    phase name, issue number (+ task `<k>`), `<main-repo>`, Step 0
    facts (generated clients included), report dir, the brief's path,
    and the files of the previous phases. End your turn after each
-   spawn.
-   - `skillhead:loop-builder` `contract` → `CONTRACTED <contract.md>` (or
-     `NEEDS-CLARIFICATION <path>`; on an open dependency without MR
-     → select that dependency next; on an undeclared dependency with
-     an open MR (`Stack`) → draft mode stacks on it, autonomous puts the lot
-     back to `ready-for-agent`, frees the slot and adds `#<n> —
-     blocked by #<m>` to the skip list, kept until #m closes, step 1). The FIRST `CONTRACTED` is never
-     the contract: `SendMessage` the SAME builder (still live, its
-     context intact — never a new spawn) this message, always the
-     same, exactly once per issue, and nothing about it earlier (the
-     builder must not know it is coming; `BUILDER.md` says nothing
-     of it):
-     ```
-     now come up with a much simpler solution that provides 80% of the benefits we are talking about here
+   spawn. At each notification, find the agent's row and result
+   below, do what it says; a letter sends you to the note of that
+   letter.
 
-     Rewrite contract.md in place: keep `Need`; redo `Shapes`, `Reuses`, `Tests`, `Slices` for that simpler solution. Add `## Simplification`, one line per thing dropped — what, and the property it costs; no acceptance criterion or constraint of the issue may be dropped. End with the same `CONTRACTED <contract.md>` line.
-     ```
-     → `CONTRACTED`. Then check `Shapes`, a closed `Tests` list,
-     `Slices`, and run, in `<main-repo>`, `LOOP_BASE=origin/<integration>
-     skillhead check contract <contract.md>`
-     before either path below: exit 2 → `contract` once more, handed
-     its stderr; a second exit 2 → step 5. No
-     contract review, no `build 1` until it passes. Then `skillhead check
-     overlap <contract.md> <contract.md of every other lot in a slot>`
-     (`LOOP_GENERATED` = an ERE of Step 0's generated paths): exit 2
-     NEVER holds a lot — `build 1` starts anyway, its prompt naming
-     the lots in flight that share files (stderr) and asking for
-     self-contained changes, no reformatting of existing code; the
-     conflict is resolved at the pack's rebase or at the merge. A
-     shared file costs one rebase, an idle slot costs a lot (user,
-     2026-10-19: « shared files don't matter,
-     there must always be 3 agents »). The lot always builds on
-     `<integration>`.
-     One slice under ~150 changed lines and no new table, route or
-     dependency in `Shapes`, or a lot touching only tests, → `build 1`, no contract review: small
-     issues ship in 30-60 min that way, where a contract review
-     costs ~25 min for findings the code review catches as well. Else spawn ONE
-     `skillhead:loop-contract-reviewer` with the contract path, its findings
-     path, `CONTRACT-REVIEW.md`, `<main-repo>`.
-   - contract reviewer, **one round, never two** → `CONTRACT-OK` →
-     `build 1`, handed the review path (its `minor` lines amend the
-     contract); `CONTRACT-REWORK <path>` → `contract` once more with
-     that path (amends, answers each finding) → `skillhead check contract`
-     and `overlap` again, as above → `build 1` whatever else that
-     amendment says. The shipper copies the open findings into
-     `pack-1.md` and the code review judges them on the diff.
-     The first pass catches what a contract review is for — a defect
-     already paid, a shape reinvented, a scope that fabricates work.
-     Rounds beyond it argue prose: measured 2026-09-21 on one issue, four
-     contract rounds and three reviews preceded a diff the code
-     review passed `MERGEABLE` first try, and review 3 prescribed a
-     migration order that was plainly wrong. A contract finding is
-     cheap to carry into the code review; a round is not.
-   - `skillhead:loop-builder` `build <k>` → `SLICED <k> <note>`. A `## Mechanic`
-     section in the note → spawn ONE `skillhead:loop-mechanic` with it
-     verbatim → `DONE <path>`. Then `build <k+1>` while slices
-     remain, else `skillhead:loop-shipper` `pack`.
-   - `skillhead:loop-shipper` `pack <r>` → `BLOCKED` on the test guard →
-     `ship <r>` with that report, then `pack` again; a second →
-     step 4 as flagged draft, never merged, even in automerge.
-   - `skillhead:loop-shipper` `pack <r>` → `PACKED <pack-<r>.md>`. Spawn ONE
-     `skillhead:loop-reviewer` with `r`, the pack path, its findings path
-     `review-<r>.md`, `REVIEW.md` path, `<main-repo>`.
-   - reviewer → `MERGEABLE`/`REWORK <path>`. Spawn `skillhead:loop-builder`
-     `ship <r>` with the findings path and the verdict.
-   - `skillhead:loop-builder` `ship <r>` → `SHIPPED <ship-<r>.md>`. `MERGEABLE`,
-     `r = 3` or a `ship` that committed no code → `skillhead:loop-shipper`
-     `deliver` with it (open findings ship flagged `[review not
-     converged]`); else `pack <r+1>`.
-   - `skillhead:loop-shipper` `deliver` → `DELIVERED <report>` → step 4 in the
-     SAME turn, no spawn in between and no turn ended on it. Its
-     Breaker map waits in `ship-<r>.md` for the closing (§ Closing).
-     `BLOCKED <deliver.md>` (comply residue) → spawn `skillhead:loop-builder`
-     `ship` once more with deliver.md, then `deliver` again; a second
-     `BLOCKED` → step 4 as flagged draft. `FAILED <path>` → step 5.
+   | Agent, phase | Result | Next |
+   |---|---|---|
+   | `skillhead:loop-builder` `contract` | the FIRST `CONTRACTED` | never the contract: the simplification pass (a) |
+   | | `CONTRACTED`, after (a) | the contract checks (b), then the review choice (c) |
+   | | `NEEDS-CLARIFICATION <path>` | on an open dependency without MR → select that dependency next; on an undeclared dependency with an open MR (`Stack`) → draft mode stacks on it, autonomous puts the lot back to `ready-for-agent`, frees the slot and adds `#<n> — blocked by #<m>` to the skip list, kept until #m closes (step 1) |
+   | `skillhead:loop-contract-reviewer`, **one round, never two** (d) | `CONTRACT-OK` | `build 1`, handed the review path (its `minor` lines amend the contract) |
+   | | `CONTRACT-REWORK <path>` | `contract` once more with that path (amends, answers each finding) → the contract checks (b) again → `build 1` whatever else that amendment says. The shipper copies the open findings into `pack-1.md` and the code review judges them on the diff |
+   | `skillhead:loop-builder` `build <k>` | `SLICED <k> <note>` | a `## Mechanic` section in the note → spawn ONE `skillhead:loop-mechanic` with it verbatim → `DONE <path>`. Then `build <k+1>` while slices remain, else `skillhead:loop-shipper` `pack` |
+   | `skillhead:loop-shipper` `pack <r>` | `BLOCKED` on the test guard | `ship <r>` with that report, then `pack` again; a second → step 4 as flagged draft, never merged, even in automerge |
+   | | `PACKED <pack-<r>.md>` | spawn ONE `skillhead:loop-reviewer` with `r`, the pack path, its findings path `review-<r>.md`, `REVIEW.md` path, `<main-repo>` |
+   | `skillhead:loop-reviewer` | `MERGEABLE` or `REWORK <path>` | spawn `skillhead:loop-builder` `ship <r>` with the findings path and the verdict |
+   | `skillhead:loop-builder` `ship <r>` | `SHIPPED <ship-<r>.md>` | `MERGEABLE`, `r = 3` or a `ship` that committed no code → `skillhead:loop-shipper` `deliver` with it (open findings ship flagged `[review not converged]`); else `pack <r+1>` |
+   | `skillhead:loop-shipper` `deliver` | `DELIVERED <report>` | step 4 in the SAME turn, no spawn in between and no turn ended on it. Its Breaker map waits in `ship-<r>.md` for the closing (§ Closing) |
+   | | `BLOCKED <deliver.md>` (comply residue) | spawn `skillhead:loop-builder` `ship` once more with deliver.md, then `deliver` again; a second `BLOCKED` → step 4 as flagged draft |
+   | | `FAILED <path>` | step 5 |
 
-4. **Verify** — from the report + forge only:
-   - MR exists on `<base>`, draft in draft mode, title `(closes #<n>)`;
-   - contract with `Shapes`, `Tests` and a `## Simplification`
-     section (the 80 % pass ran); reviewer `Necessary`
-     written, zero `Unpaid shape` left open; ship.md disposition
-     table complete;
-   - no comply finding on an added line. The forge pipeline does NOT
-     gate the merge (user, 2026-09-22: "as long as it passes locally
-     it's fine") — it runs the same trio, minutes to hours later, and
-     waiting on it stalled finished work. Record its id, never block
-     on it;
-   - contract findings `applied` or `refuted — <evidence>`, ONE
-     contract review; last
-     review `MERGEABLE` with every finding `fixed`, `unpaid —
-     <reason>` (its line under `## Unpaid findings` of the last
-     `ship-<r>.md`) or `dropped — <evidence>`, or `[review not converged]` at round 3
-     with the open findings as an MR comment;
-   - `ship-<r>.md` holds a Breaker map, or `QA: not run — <reason>` —
-     never on a front lot (Step 0);
-   - description per `PRESENTATION.md` (read once).
-   Non-conforming → SendMessage the shipper ONCE with the missing
-   items; still non-conforming → step 5. Cap-hit review →
-   confirm draft + findings comment, never merge, cleanup.
-   Autonomous → the lot is `READY` and enters the merge queue below;
-   once merged into `<integration>`, confirm the source branch
-   removed and append `integrated: #<n> !<mr> <report-dir>` to
-   `state.md`. The issue stays open, `picked-by-agent`, until the
-   closing MR merges (only a merge into `<default>` closes it).
+   (a) **Simplification pass.** `SendMessage` the SAME builder (still
+   live, its context intact — never a new spawn) this message, always
+   the same, exactly once per issue, and nothing about it earlier (the
+   builder must not know it is coming; `BUILDER.md` says nothing of
+   it):
+   ```
+   now come up with a much simpler solution that provides 80% of the benefits we are talking about here
+
+   Rewrite contract.md in place: keep `Need`; redo `Shapes`, `Reuses`, `Tests`, `Slices` for that simpler solution. Add `## Simplification`, one line per thing dropped — what, and the property it costs; no acceptance criterion or constraint of the issue may be dropped. End with the same `CONTRACTED <contract.md>` line.
+   ```
+   → `CONTRACTED`.
+
+   (b) **Contract checks.** Check `Shapes`, a closed `Tests` list,
+   `Slices`, and run, in `<main-repo>`, `LOOP_BASE=origin/<integration>
+   skillhead check contract <contract.md>`: exit 2 → `contract` once
+   more, handed its stderr; a second exit 2 → step 5. No contract
+   review, no `build 1` until it passes. Then `skillhead check overlap
+   <contract.md> <contract.md of every other lot in a slot>`
+   (`LOOP_GENERATED` = an ERE of Step 0's generated paths): exit 2
+   NEVER holds a lot — `build 1` starts anyway, its prompt naming the
+   lots in flight that share files (stderr) and asking for
+   self-contained changes, no reformatting of existing code; the
+   conflict is resolved at the pack's rebase or at the merge. A shared
+   file costs one rebase, an idle slot costs a lot (user, 2026-10-19:
+   « shared files don't matter, there must always be 3 agents »). The
+   lot always builds on `<integration>`.
+
+   (c) **Review choice.** One slice under ~150 changed lines and no new
+   table, route or dependency in `Shapes`, or a lot touching only
+   tests, → `build 1`, no contract review: small issues ship in 30-60
+   min that way, where a contract review costs ~25 min for findings
+   the code review catches as well. Else spawn ONE
+   `skillhead:loop-contract-reviewer` with the contract path, its
+   findings path, `CONTRACT-REVIEW.md`, `<main-repo>`.
+
+   (d) **One contract round.** The first pass catches what a contract
+   review is for — a defect already paid, a shape reinvented, a scope
+   that fabricates work. Rounds beyond it argue prose: measured
+   2026-09-21 on one issue, four contract rounds and three reviews
+   preceded a diff the code review passed `MERGEABLE` first try, and
+   review 3 prescribed a migration order that was plainly wrong. A
+   contract finding is cheap to carry into the code review; a round is
+   not.
+
+4. **Verify** — from the report + forge only. Every row must hold:
+
+   | Check | Holds when |
+   |---|---|
+   | MR | it exists on `<base>`, draft in draft mode, title `(closes #<n>)` |
+   | Contract | `Shapes`, `Tests` and a `## Simplification` section (the 80 % pass ran) |
+   | Contract review | its findings `applied` or `refuted — <evidence>`; ONE contract review |
+   | Reviewer | `Necessary` written, zero `Unpaid shape` left open |
+   | Code review | the last review `MERGEABLE` with every finding `fixed`, `unpaid — <reason>` (its line under `## Unpaid findings` of the last `ship-<r>.md`) or `dropped — <evidence>`; or `[review not converged]` at round 3 with the open findings as an MR comment |
+   | Dispositions | the ship.md disposition table complete |
+   | Lint | no comply finding on an added line (e) |
+   | QA plan | `ship-<r>.md` holds a Breaker map, or `QA: not run — <reason>` — never on a front lot (Step 0) |
+   | Description | per `PRESENTATION.md` (read once) |
+
+   | Outcome | Next |
+   |---|---|
+   | a row fails | SendMessage the shipper ONCE with the missing items; still non-conforming → step 5 |
+   | cap-hit review | confirm draft + findings comment, never merge, cleanup |
+   | autonomous, every row holds | the lot is `READY` and enters the merge queue below; once merged into `<integration>`, confirm the source branch removed and append `integrated: #<n> !<mr> <report-dir>` to `state.md`. The issue stays open, `picked-by-agent`, until the closing MR merges (only a merge into `<default>` closes it) |
+
+   (e) The forge pipeline does NOT gate the merge (user, 2026-09-22:
+   "as long as it passes locally it's fine") — it runs the same trio,
+   minutes to hours later, and waiting on it stalled finished work.
+   Record its id, never block on it.
+
    Both modes, after the merge or the draft, and at step 5: clean up
    behind the issue — everything it created, nothing else.
    ```bash

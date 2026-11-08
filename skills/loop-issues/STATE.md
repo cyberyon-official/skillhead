@@ -23,6 +23,7 @@ no other line: brakes and history go to `brakes.md`, findings to
 | `held: contract #<n> — <disk reason>` | the disk check before a new lot | the next lot's notification (retried first) |
 | `stopped: <disk\|model\|drained> — <reason>` | the loop's stops | Step 0 of the next session (dropped there) |
 | `integration: <branch>` | Step 0 (none yet: `loop/<UTC date>`) | every phase (`<integration>`), the closing |
+| `queued: #<n> !<mr> <sha> — <report dir>` | step 4, a verified lot leaving its slot for the merge queue (FIFO) | the merge queue's head |
 | `integrated: #<n> !<mr> <report-dir>` | Step 4, per lot merged into `<integration>` | Step 1 (`LOOP_INTEGRATED`), the closing |
 | `closing: asked` | « close the loop », or the end of the queue | the closing |
 | `facts: <path>` | Step 0 | every spawn (the Step 0 facts) |
