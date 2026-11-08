@@ -114,6 +114,12 @@ python3 ci/check.py   # merge gate: hook tests, template tests, then the guards
 CI (`.github/workflows/hooks.yml`) runs it on Ubuntu, macOS and Windows
 with Python 3.10 and 3.13, and rejects any path that is invalid on NTFS.
 
+## Security
+
+The hooks are guardrails for a cooperative agent, not a sandbox: what they
+refuse, how they read commands and what they cannot see is in
+[`SECURITY.md`](SECURITY.md).
+
 ## Licence
 
 MIT — see `LICENSE`. Derived from [`rbaumier/skills`](https://github.com/rbaumier/skills)
