@@ -4,6 +4,7 @@
 The brief owns each phase's gate scope; the prompt hands facts. The gate
 commands come from the project profile (`gate_patterns`, see _lib.py).
 """
+import re
 import sys
 from pathlib import Path
 
@@ -18,7 +19,10 @@ def main(argv):
     profile = L.load_profile(data.get("cwd"))
     if L.bare_agent(tool.get("subagent_type")) not in profile["guarded_agents"]:
         return 0
-    gate = L.first_match(profile["gate_patterns"], str(tool.get("prompt") or ""))
+    # Read as the agent will: case, Unicode look-alikes, invisible characters
+    # and line breaks between words do not hide a gate.
+    text = L.plain_text(" ".join(str(tool.get(k) or "") for k in ("prompt", "description")))
+    gate = L.first_match(profile["gate_patterns"], text, re.IGNORECASE)
     if gate:
         raise L.Refuse(
             f"Refused: the prompt names a gate (`{gate}`). The brief owns each phase's "
