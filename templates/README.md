@@ -5,8 +5,8 @@ The starting structure for any project driven by `/skillhead:issue` and
 template brings one place for each rule and the guards that hold them.
 
 ```sh
-python3 new_project.py ../my-project --name "My project" --forge gitlab --mode draft
-python3 new_project.py ../existing-project   # adds, never overwrites
+python3 skills/initialize/new_project.py ../my-project --name "My project" --forge gitlab --mode draft
+python3 skills/initialize/new_project.py ../existing-project   # adds, never overwrites
 ```
 
 In Claude Code, `/skillhead:initialize` runs this generator with facts read

@@ -81,8 +81,8 @@ commit to you.
 Without Claude, the generator alone does the first step:
 
 ```sh
-python3 new_project.py ../my-project --name "My project" --forge github --mode draft
-python3 new_project.py ../existing-project --dry-run   # lists what it would write
+python3 skills/initialize/new_project.py ../my-project --name "My project" --forge github --mode draft
+python3 skills/initialize/new_project.py ../existing-project --dry-run   # lists what it would write
 ```
 
 This lays down the structure the skills read — `CLAUDE.md` as a pointer

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Lays down the agent-ready structure of templates/project/ in a directory.
 
-  python3 new_project.py <dir> [--name NAME] [--forge github|gitlab]
+  python3 skills/initialize/new_project.py <dir> [--name NAME] [--forge github|gitlab]
                          [--mode draft|automerge] [--default-branch main]
                          [--no-git] [--dry-run]
 
@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 sys.dont_write_bytecode = True
-TEMPLATE = Path(__file__).resolve().parent / "templates" / "project"
+TEMPLATE = Path(__file__).resolve().parents[2] / "templates" / "project"
 FORGE_CI = {"github": ".github/workflows/ci.yml", "gitlab": ".gitlab-ci.yml"}
 
 

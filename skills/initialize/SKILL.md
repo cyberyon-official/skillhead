@@ -11,7 +11,7 @@ disable-model-invocation: true
 
 # /skillhead:initialize
 
-`new_project.py` is the only thing that writes the template; this skill runs
+`new_project.py`, next to this file, is the only thing that writes the template; this skill runs
 it with the right facts and fills in what a script cannot guess. It never
 overwrites a file and never commits.
 

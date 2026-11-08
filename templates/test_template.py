@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checks new_project.py and the template: python3 templates/test_template.py"""
+"""Checks skills/initialize/new_project.py and the template: python3 templates/test_template.py"""
 import subprocess
 import sys
 import tempfile
@@ -11,7 +11,7 @@ REPO = Path(__file__).resolve().parents[1]
 
 
 def generate(target, *args):
-    return subprocess.run([sys.executable, str(REPO / "new_project.py"), str(target), *args],
+    return subprocess.run([sys.executable, str(REPO / "skills" / "initialize" / "new_project.py"), str(target), *args],
                           capture_output=True, text=True, encoding="utf-8")
 
 
