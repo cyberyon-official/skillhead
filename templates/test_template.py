@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checks new_project.py and the template: python3 templates/test_template.py"""
+"""Checks skills/initialize/new_project.py and the template: python3 templates/test_template.py"""
 import subprocess
 import sys
 import tempfile
@@ -11,7 +11,7 @@ REPO = Path(__file__).resolve().parents[1]
 
 
 def generate(target, *args):
-    return subprocess.run([sys.executable, str(REPO / "new_project.py"), str(target), *args],
+    return subprocess.run([sys.executable, str(REPO / "skills" / "initialize" / "new_project.py"), str(target), *args],
                           capture_output=True, text=True, encoding="utf-8")
 
 
@@ -42,6 +42,16 @@ class Template(unittest.TestCase):
         self.assertEqual((target / "README.md").read_text(encoding="utf-8"), "# Mine\n")
         self.assertIn("README.md", result.stdout)
         self.assertFalse((target / ".git").exists(), "no git init in an existing directory")
+
+    def test_dry_run_changes_nothing(self):
+        target = self.tmp / "dry"
+        target.mkdir()
+        (target / "README.md").write_text("# Mine\n", encoding="utf-8")
+        result = generate(target, "--dry-run")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual([p.name for p in target.iterdir()], ["README.md"], "dry run wrote files")
+        self.assertIn("+ CLAUDE.md", result.stdout)
+        self.assertIn("README.md", result.stdout.split("Already present")[1])
 
     def test_guards_catch_a_dated_rule(self):
         target = self.tmp / "dated"

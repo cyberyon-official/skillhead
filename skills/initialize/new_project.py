@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """Lays down the agent-ready structure of templates/project/ in a directory.
 
-  python3 new_project.py <dir> [--name NAME] [--forge github|gitlab]
+  python3 skills/initialize/new_project.py <dir> [--name NAME] [--forge github|gitlab]
                          [--mode draft|automerge] [--default-branch main]
-                         [--no-git]
+                         [--no-git] [--dry-run]
 
 <dir> absent or empty → a new project (git init on --default-branch).
 <dir> holding files → the structure is added beside them: an existing
 file is never overwritten, it is listed so you merge it by hand.
 Stack-agnostic: fill ci/gates.json, docs/agents/toolchain.md and
-.claude/skills/verify/SKILL.md for the project's stack afterwards.
+.claude/skills/verify/SKILL.md for the project's stack afterwards —
+/skillhead:initialize does it with you. --dry-run lists what would be
+written and kept, and changes nothing.
 """
 import argparse
 import shutil
@@ -18,7 +20,7 @@ import sys
 from pathlib import Path
 
 sys.dont_write_bytecode = True
-TEMPLATE = Path(__file__).resolve().parent / "templates" / "project"
+TEMPLATE = Path(__file__).resolve().parents[2] / "templates" / "project"
 FORGE_CI = {"github": ".github/workflows/ci.yml", "gitlab": ".gitlab-ci.yml"}
 
 
@@ -41,6 +43,7 @@ def main(argv=None):
     ap.add_argument("--mode", choices=["draft", "automerge"], default="draft")
     ap.add_argument("--default-branch", default="main")
     ap.add_argument("--no-git", action="store_true")
+    ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args(argv)
 
     target = Path(a.dir).expanduser().resolve()
@@ -58,6 +61,9 @@ def main(argv=None):
         if dst.exists():
             kept.append(relative)
             continue
+        written.append(relative)
+        if a.dry_run:
+            continue
         dst.parent.mkdir(parents=True, exist_ok=True)
         try:
             text = src.read_text(encoding="utf-8")
@@ -65,12 +71,16 @@ def main(argv=None):
             shutil.copy2(src, dst)
         else:
             dst.write_bytes(render(text, values).encode("utf-8"))
-        written.append(relative)
 
-    if fresh and not a.no_git and shutil.which("git") and not (target / ".git").exists():
+    if fresh and not a.no_git and not a.dry_run and shutil.which("git") and not (target / ".git").exists():
         subprocess.run(["git", "init", "-q", "-b", a.default_branch, str(target)], check=False)
 
-    print(f"{len(written)} files written to {target}")
+    if a.dry_run:
+        print(f"Dry run: {len(written)} files would be written to {target}")
+        for relative in written:
+            print(f"  + {relative}")
+    else:
+        print(f"{len(written)} files written to {target}")
     if kept:
         print("Already present, left untouched (merge by hand):")
         for relative in kept:
