@@ -1,7 +1,7 @@
 {
   "name": "skillhead",
   "displayName": "skillhead",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "From a loose need to a merged change: /issue writes minimal, need-only issues; /loop-issues implements them autonomously with a reviewed contract, diff review, an integration branch, QA and one MR to the default branch.",
   "author": {
     "name": "Guillaume Chauvet",
